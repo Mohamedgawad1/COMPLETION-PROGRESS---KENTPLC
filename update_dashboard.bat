@@ -15,15 +15,6 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo.
-echo [2/2] Copying to index.html...
-copy /Y "%~dp0KENTPLC_Completion_Dashboard.html" "%~dp0index.html" >nul
-if %ERRORLEVEL% NEQ 0 (
-    echo [ERROR] Failed to copy index.html!
-    pause
-    exit /b 1
-)
-
-echo.
 echo ============================================
 echo  Dashboard updated successfully!
 echo ============================================
