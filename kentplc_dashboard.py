@@ -543,12 +543,10 @@ function initCharts() {
     ]}, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: '#ede7db' } }, x: { grid: { display: false } } }, plugins: { legend: { labels: { usePointStyle: true, pointStyle: 'circle', color: '#6b5e4d' } } } }
   });
   new Chart(document.getElementById('chartCompMs'), {
-    type: 'radar', data: { labels: sorted.map(function(m){ return 'Ms ' + m.letter }), datasets: [
-      { label: 'Total Tasks', data: sorted.map(function(m){ return m.totalTasks }),
-        backgroundColor: 'rgba(37,99,235,0.15)', borderColor: '#2563eb', pointBackgroundColor: '#2563eb', pointBorderColor: '#1a1a2e', pointBorderWidth: 2, borderWidth: 2, pointRadius: 5, pointHoverRadius: 7 },
-      { label: 'Closed Tasks', data: sorted.map(function(m){ return m.closedTasks }),
-        backgroundColor: 'rgba(26,138,74,0.2)', borderColor: '#22c55e', pointBackgroundColor: '#22c55e', pointBorderColor: '#1a1a2e', pointBorderWidth: 2, borderWidth: 2, pointRadius: 5, pointHoverRadius: 7 }
-    ]}, options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, ticks: { stepSize: 50, backdropColor: 'transparent', color: '#9ca3af', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.1)' }, angleLines: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#d1d5db', font: { size: 12, weight: '700' } } } }, plugins: { legend: { position: 'bottom', labels: { color: '#d1d5db', usePointStyle: true, pointStyle: 'circle', padding: 16 } }, datalabels: { display: false } } }
+    type: 'radar', data: { labels: sorted.map(function(m){ return 'Ms ' + m.letter }), datasets: [{
+      label: 'Completion %', data: sorted.map(function(m){ return m.completion }),
+      backgroundColor: 'rgba(200,148,10,0.25)', borderColor: '#f59e0b', pointBackgroundColor: '#f59e0b', pointBorderColor: '#1a1a2e', pointBorderWidth: 2, borderWidth: 2, pointRadius: 5, pointHoverRadius: 7
+    }]}, options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, ticks: { stepSize: 0.5, backdropColor: 'transparent', color: '#9ca3af', font: { size: 10 }, callback: function(v){ return v + '%' } }, grid: { color: 'rgba(255,255,255,0.1)' }, angleLines: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#d1d5db', font: { size: 12, weight: '700' } } } }, plugins: { legend: { display: false }, datalabels: { display: false } } }
   });
   new Chart(document.getElementById('chartDisc'), {
     type: 'doughnut', data: { labels: ['E - Electrical (538)', 'I - Instrumentation (313)'], datasets: [{ data: [538, 313], backgroundColor: ['#2563eb', '#7c3aed'], borderWidth: 3, borderColor: '#fffcf7', hoverOffset: 10 }] },
