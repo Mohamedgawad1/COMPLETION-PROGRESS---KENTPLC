@@ -6,6 +6,7 @@
 <title>KENT PLC - Completion Progress Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -271,7 +272,7 @@ table tr:hover td{background:rgba(200,148,10,0.04)}
   <div id="charts" class="panel">
     <div class="grid g2">
       <div class="card"><h3>Tasks by Milestone</h3><div class="chart-container tall"><canvas id="chartTasksMs"></canvas></div></div>
-      <div class="card"><h3>Completion Radar</h3><div class="chart-container tall"><canvas id="chartCompMs"></canvas></div></div>
+      <div class="card" style="padding:0;overflow:hidden"><h3 style="padding:22px 22px 0">Completion Radar</h3><div style="background:#1a1a2e;border-radius:0 0 14px 14px;padding:20px"><div class="chart-container tall"><canvas id="chartCompMs"></canvas></div></div></div>
       <div class="card"><h3>Discipline Split</h3><div class="chart-container"><canvas id="chartDisc"></canvas></div></div>
       <div class="card"><h3>Punch by Category per Milestone</h3><div class="chart-container tall"><canvas id="chartPlCross"></canvas></div></div>
     </div>
@@ -293,6 +294,9 @@ var searchActive = false;
 Chart.defaults.color = '#6b5e4d';
 Chart.defaults.borderColor = '#d9d0c1';
 Chart.defaults.font.family = "'Inter',system-ui,sans-serif";
+Chart.register(ChartDataLabels);
+var dlOpts = { display: function(ctx){ return ctx.dataset.data[ctx.dataIndex] > 0; }, color: '#fff', font: { weight: '700', size: 11 }, formatter: function(v, ctx){ var sum = ctx.chart.data.datasets[0].data.reduce(function(a,b){return a+b},0); var pct = (v/sum*100).toFixed(1); return pct + '%'; } };
+var dlOptsNoCenter = { display: false };
 
 var msColors = ['#c8940a','#c53030','#1a8a4a','#2563eb','#7c3aed','#ec4899','#0891b2','#d97706','#6366f1'];
 var msColorsAlpha = ['rgba(200,148,10,0.7)','rgba(197,48,48,0.7)','rgba(26,138,74,0.7)','rgba(37,99,235,0.7)','rgba(124,58,237,0.7)','rgba(236,72,153,0.7)','rgba(8,145,178,0.7)','rgba(217,119,6,0.7)','rgba(99,102,241,0.7)'];
@@ -311,12 +315,12 @@ function initOverview() {
   new Chart(document.getElementById('overviewPie'), {
     type: 'doughnut',
     data: { labels: ['Closed (3)', 'Started (3)', 'Pending (845)'], datasets: [{ data: [3, 3, 845], backgroundColor: ['#1a8a4a','#c8940a','#c53030'], borderWidth: 3, borderColor: '#fffcf7', hoverOffset: 10 }] },
-    options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle', color: '#6b5e4d' } } } }
+    options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle', color: '#6b5e4d' } }, datalabels: dlOpts } }
   });
   new Chart(document.getElementById('plPie'), {
     type: 'doughnut',
     data: { labels: ['Originated (1766)', 'Closed (437)', 'Completed (30)'], datasets: [{ data: [1766, 437, 30], backgroundColor: ['#c53030','#1a8a4a','#2563eb'], borderWidth: 3, borderColor: '#fffcf7', hoverOffset: 10 }] },
-    options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle', color: '#6b5e4d' } } } }
+    options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle', color: '#6b5e4d' } }, datalabels: dlOpts } }
   });
 }
 
@@ -331,7 +335,7 @@ function initMilestones() {
     ]},
     options: { responsive: true, maintainAspectRatio: false,
       scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, grid: { color: '#ede7db' } } },
-      plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'circle', padding: 16, color: '#6b5e4d' } } }
+      plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'circle', padding: 16, color: '#6b5e4d' } }, datalabels: { display: false } }
     }
   });
   var container = document.getElementById('milestoneCards');
@@ -394,7 +398,7 @@ function initPunchList() {
   new Chart(document.getElementById('plCatChart'), {
     type: 'doughnut',
     data: { labels: Object.keys(DATA.plByCategory), datasets: [{ data: Object.values(DATA.plByCategory), backgroundColor: ['#c53030','#c8940a','#0891b2'], borderWidth: 3, borderColor: '#fffcf7', hoverOffset: 10 }] },
-    options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle', color: '#6b5e4d' } } } }
+    options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle', color: '#6b5e4d' } }, datalabels: dlOpts } }
   });
   var plSorted = DATA.plByMilestone.slice().sort(function(a,b){ return (a.Priority||'').localeCompare(b.Priority||''); });
   new Chart(document.getElementById('plMsChart'), {
@@ -423,12 +427,12 @@ function initCharts() {
   new Chart(document.getElementById('chartCompMs'), {
     type: 'radar', data: { labels: sorted.map(function(m){ return 'Ms ' + m.letter }), datasets: [{
       label: 'Completion %', data: sorted.map(function(m){ return m.completion }),
-      backgroundColor: 'rgba(200,148,10,0.15)', borderColor: '#c8940a', pointBackgroundColor: '#c8940a', pointBorderColor: '#fffcf7', pointBorderWidth: 2, borderWidth: 2
-    }]}, options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 5, ticks: { stepSize: 1, backdropColor: 'transparent' }, grid: { color: '#ede7db' }, angleLines: { color: '#ede7db' }, pointLabels: { color: '#6b5e4d' } } }, plugins: { legend: { display: false } } }
+      backgroundColor: 'rgba(200,148,10,0.25)', borderColor: '#f59e0b', pointBackgroundColor: '#f59e0b', pointBorderColor: '#1a1a2e', pointBorderWidth: 2, borderWidth: 2, pointRadius: 5, pointHoverRadius: 7
+    }]}, options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 5, ticks: { stepSize: 1, backdropColor: 'transparent', color: '#9ca3af', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.1)' }, angleLines: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#d1d5db', font: { size: 12, weight: '600' } } } }, plugins: { legend: { display: false }, datalabels: { display: false } } }
   });
   new Chart(document.getElementById('chartDisc'), {
     type: 'doughnut', data: { labels: ['E - Electrical (538)', 'I - Instrumentation (313)'], datasets: [{ data: [538, 313], backgroundColor: ['#2563eb', '#7c3aed'], borderWidth: 3, borderColor: '#fffcf7', hoverOffset: 10 }] },
-    options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle', color: '#6b5e4d' } } } }
+    options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle', color: '#6b5e4d' } }, datalabels: dlOpts } }
   });
   var plLetters = Object.keys(DATA.plCross).sort();
   new Chart(document.getElementById('chartPlCross'), {
