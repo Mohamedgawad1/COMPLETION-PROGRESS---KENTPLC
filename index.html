@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KENT PLC - Completion Progress Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f5f0e8;--bg2:#ede7db;--card:#fffcf7;--card2:#faf6ee;--card3:#f0ead9;
+  --border:#d9d0c1;--border2:#c4b9a7;
+  --text:#2c2416;--text2:#6b5e4d;--text3:#9a8d7c;
+  --gold:#c8940a;--gold2:#a67808;--gold-bg:rgba(200,148,10,0.1);
+  --green:#1a8a4a;--green2:#15803d;--green-bg:rgba(26,138,74,0.08);
+  --red:#c53030;--red2:#b91c1c;--red-bg:rgba(197,48,48,0.08);
+  --blue:#2563eb;--blue2:#1d4ed8;--blue-bg:rgba(37,99,235,0.08);
+  --cyan:#0891b2;--purple:#7c3aed;
+  --shadow:0 1px 4px rgba(44,36,22,0.06);
+  --shadow-lg:0 8px 30px rgba(44,36,22,0.1);
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+.header{
+  background:linear-gradient(135deg,#fffcf7 0%,#faf6ee 50%,#f5f0e8 100%);
+  padding:0;border-bottom:3px solid var(--gold);position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 12px rgba(44,36,22,0.08);
+}
+.header-top{display:flex;align-items:center;justify-content:space-between;padding:20px 36px 10px}
+.header h1{font-size:22px;font-weight:800;color:var(--text)}
+.header h1 span{color:var(--gold)}
+.header-badge{display:flex;gap:8px;align-items:center}
+.header-badge .tag{background:var(--gold-bg);color:var(--gold);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid rgba(200,148,10,0.25)}
+.header-badge .live{background:var(--green-bg);color:var(--green);font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;border:1px solid rgba(26,138,74,0.25);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.header .subtitle{color:var(--text2);font-size:13px;padding:0 36px 8px}
+.header .meta{display:flex;gap:8px;padding:0 36px 14px;flex-wrap:wrap}
+.header .meta span{font-size:10px;color:var(--text2);background:var(--card2);padding:4px 12px;border-radius:6px;border:1px solid var(--border);font-weight:600}
+.header.searching-mode{border-bottom-color:var(--blue)}
+.header.searching-mode .meta span{border-color:rgba(37,99,235,0.3);background:var(--blue-bg);color:var(--blue)}
+
+.container{max-width:1600px;margin:0 auto;padding:24px 20px}
+
+.tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--card);padding:5px;border-radius:14px;border:1px solid var(--border);flex-wrap:wrap;box-shadow:var(--shadow)}
+.tab{padding:10px 20px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:700;color:var(--text3);transition:all .25s;border:none;background:none;text-transform:uppercase;letter-spacing:0.8px}
+.tab:hover{background:var(--card2);color:var(--text2)}
+.tab.active{background:var(--gold);color:#fff;box-shadow:0 2px 10px rgba(200,148,10,0.3)}
+
+.panel{display:none;animation:panelIn .3s ease}
+.panel.active{display:block}
+@keyframes panelIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g5{grid-template-columns:repeat(5,1fr)}
+@media(max-width:1200px){.g4,.g5{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){.g2,.g3,.g4,.g5{grid-template-columns:1fr}}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;transition:all .25s;box-shadow:var(--shadow)}
+.card:hover{box-shadow:var(--shadow-lg);transform:translateY(-1px)}
+.card h3{font-size:11px;color:var(--text3);margin-bottom:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+
+.stat-card{position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.gold::before{background:linear-gradient(90deg,#c8940a,#eab308)}
+.stat-card.green::before{background:linear-gradient(90deg,#1a8a4a,#22c55e)}
+.stat-card.red::before{background:linear-gradient(90deg,#c53030,#ef4444)}
+.stat-card.blue::before{background:linear-gradient(90deg,#2563eb,#3b82f6)}
+.stat-card.cyan::before{background:linear-gradient(90deg,#0891b2,#06b6d4)}
+.stat-card.purple::before{background:linear-gradient(90deg,#7c3aed,#8b5cf6)}
+.stat-card .value{font-size:34px;font-weight:900;letter-spacing:-1px;line-height:1}
+.stat-card .label{font-size:11px;color:var(--text3);margin-top:6px;font-weight:600}
+.stat-card.gold .value{color:var(--gold)}
+.stat-card.green .value{color:var(--green)}
+.stat-card.red .value{color:var(--red)}
+.stat-card.blue .value{color:var(--blue)}
+.stat-card.cyan .value{color:var(--cyan)}
+.stat-card.purple .value{color:var(--purple)}
+
+.progress-bar{height:8px;background:var(--card3);border-radius:6px;overflow:hidden;margin-top:10px}
+.progress-bar .fill{height:100%;border-radius:6px;transition:width 1s ease}
+.progress-bar .fill.green{background:linear-gradient(90deg,#1a8a4a,#22c55e)}
+.progress-bar .fill.blue{background:linear-gradient(90deg,#2563eb,#60a5fa)}
+.progress-bar .fill.gold{background:linear-gradient(90deg,#c8940a,#eab308)}
+.progress-bar .fill.red{background:linear-gradient(90deg,#c53030,#ef4444)}
+.progress-bar .fill.cyan{background:linear-gradient(90deg,#0891b2,#22d3ee)}
+.progress-bar .fill.purple{background:linear-gradient(90deg,#7c3aed,#a78bfa)}
+
+.chart-container{position:relative;height:300px}
+.chart-container.tall{height:420px}
+
+table{width:100%;border-collapse:collapse;font-size:12px}
+table th{text-align:left;padding:12px 14px;background:var(--card2);color:var(--gold);font-weight:700;border-bottom:2px solid var(--gold);position:sticky;top:0;z-index:1;font-size:10px;text-transform:uppercase;letter-spacing:0.8px}
+table td{padding:10px 14px;border-bottom:1px solid var(--border);transition:background .2s}
+table tr{transition:all .2s}
+table tr:hover td{background:rgba(200,148,10,0.04)}
+.table-scroll{max-height:520px;overflow-y:auto;border-radius:12px;border:1px solid var(--border);box-shadow:var(--shadow)}
+.table-scroll::-webkit-scrollbar{width:6px}
+.table-scroll::-webkit-scrollbar-track{background:var(--card2)}
+.table-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+.badge{display:inline-block;padding:3px 10px;border-radius:8px;font-size:10px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase}
+.badge.green{background:var(--green-bg);color:var(--green);border:1px solid rgba(26,138,74,0.2)}
+.badge.red{background:var(--red-bg);color:var(--red);border:1px solid rgba(197,48,48,0.2)}
+.badge.gold{background:var(--gold-bg);color:var(--gold);border:1px solid rgba(200,148,10,0.2)}
+.badge.blue{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(37,99,235,0.2)}
+.badge.purple{background:rgba(124,58,237,0.08);color:var(--purple);border:1px solid rgba(124,58,237,0.2)}
+.badge.cyan{background:rgba(8,145,178,0.08);color:var(--cyan);border:1px solid rgba(8,145,178,0.2)}
+.badge.steel{background:var(--card2);color:var(--text2);border:1px solid var(--border)}
+
+.ms-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;transition:all .25s;box-shadow:var(--shadow)}
+.ms-card:hover{box-shadow:var(--shadow-lg)}
+.ms-card .ms-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.ms-card .ms-header h4{font-size:16px;font-weight:800}
+.ms-card .ms-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.ms-card .ms-stat{text-align:center;padding:12px 8px;background:var(--card2);border-radius:10px;border:1px solid var(--border)}
+.ms-card .ms-stat .num{font-size:20px;font-weight:800}
+.ms-card .ms-stat .lbl{font-size:10px;color:var(--text3);margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+
+.search-wrap{position:relative;margin-bottom:16px}
+.search-box{width:100%;padding:14px 20px 14px 48px;background:var(--card);border:2px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;outline:none;transition:all .25s;font-family:inherit}
+.search-box:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(200,148,10,0.1);background:var(--card)}
+.search-box::placeholder{color:var(--text3)}
+.search-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:18px;transition:color .25s}
+.search-box:focus ~ .search-icon{color:var(--gold)}
+.search-count{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text3);background:var(--card2);padding:4px 10px;border-radius:6px;font-weight:600;transition:all .25s}
+.search-active .search-count{color:var(--gold);background:var(--gold-bg);border:1px solid rgba(200,148,10,0.25)}
+
+.filter-row{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.filter-btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text3);font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:0.5px}
+.filter-btn:hover{background:var(--card2);color:var(--text2);border-color:var(--border2)}
+.filter-btn.active{background:var(--gold);color:#fff;border-color:var(--gold);box-shadow:0 2px 8px rgba(200,148,10,0.3)}
+
+.search-highlight{background:rgba(200,148,10,0.2);color:var(--gold);padding:1px 4px;border-radius:3px;font-weight:700}
+.searching tr.search-match td{background:rgba(200,148,10,0.04);border-bottom-color:rgba(200,148,10,0.15)}
+.searching tr.search-match:hover td{background:rgba(200,148,10,0.1)}
+.searching tr.search-nomatch td{opacity:0.3}
+.searching tr.search-nomatch:hover td{opacity:0.6}
+</style>
+</head>
+<body>
+<div class="header" id="mainHeader">
+  <div class="header-top">
+    <h1><span>KENT</span> PLC - Completion Progress Dashboard</h1>
+    <div class="header-badge">
+      <span class="tag">PS5 - Tanzania</span>
+      <span class="live">LIVE</span>
+    </div>
+  </div>
+  <div class="subtitle">Pre-Commissioning Progress Tracker | Pumping Station 5 | Cut-off: 31 July 2026</div>
+  <div class="meta">
+    <span>Company: KENT</span>
+    <span>Tasks: 851</span>
+    <span>Subsystems: 123</span>
+    <span>Punch List: 2233</span>
+    <span>Completion: 0.35%</span>
+  </div>
+</div>
+
+<div class="container">
+  <div class="tabs">
+    <div class="tab active" onclick="showPanel('overview',this)">Overview</div>
+    <div class="tab" onclick="showPanel('milestones',this)">Milestones</div>
+    <div class="tab" onclick="showPanel('subsystems',this)">Subsystems</div>
+    <div class="tab" onclick="showPanel('punchlist',this)">Punch List</div>
+    <div class="tab" onclick="showPanel('charts',this)">Analytics</div>
+    <div class="tab" onclick="showPanel('systemview',this)">System View</div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div id="overview" class="panel active">
+    <div class="grid g5" style="margin-bottom:20px">
+      <div class="card stat-card gold"><h3>Total Tasks</h3><div class="value">851</div><div class="label">Across 9 Milestones</div></div>
+      <div class="card stat-card green"><h3>Closed Tasks</h3><div class="value">3</div><div class="label">0.35% Completion</div><div class="progress-bar" style="margin-top:10px"><div class="fill green" style="width:2%"></div></div></div>
+      <div class="card stat-card red"><h3>Open Tasks</h3><div class="value">848</div><div class="label">845 Pending + 3 Started</div></div>
+      <div class="card stat-card cyan"><h3>Subsystems</h3><div class="value">123</div><div class="label">0 Complete / 123 Active</div></div>
+      <div class="card stat-card purple"><h3>Punch List</h3><div class="value">2233</div><div class="label">437 Closed / 1766 Open</div></div>
+    </div>
+    <div class="grid g3" style="margin-bottom:20px">
+      <div class="card" style="border-left:4px solid var(--blue)">
+        <h3>E - Electrical</h3>
+        <div style="text-align:center;padding:8px 0">
+          <div style="font-size:42px;font-weight:900;color:var(--blue)">538</div>
+          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-top:2px">Tasks</div>
+          <div style="display:flex;justify-content:center;gap:24px;margin-top:12px">
+            <div><span style="font-size:20px;font-weight:800;color:var(--green)">3</span><div style="font-size:10px;color:var(--text3)">CLOSED</div></div>
+            <div><span style="font-size:20px;font-weight:800;color:var(--red)">535</span><div style="font-size:10px;color:var(--text3)">OPEN</div></div>
+          </div>
+          <div class="progress-bar" style="margin-top:12px"><div class="fill blue" style="width:0.6%"></div></div>
+        </div>
+      </div>
+      <div class="card" style="border-left:4px solid var(--purple)">
+        <h3>I - Instrumentation</h3>
+        <div style="text-align:center;padding:8px 0">
+          <div style="font-size:42px;font-weight:900;color:var(--purple)">313</div>
+          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-top:2px">Tasks</div>
+          <div style="display:flex;justify-content:center;gap:24px;margin-top:12px">
+            <div><span style="font-size:20px;font-weight:800;color:var(--green)">0</span><div style="font-size:10px;color:var(--text3)">CLOSED</div></div>
+            <div><span style="font-size:20px;font-weight:800;color:var(--red)">313</span><div style="font-size:10px;color:var(--text3)">OPEN</div></div>
+          </div>
+          <div class="progress-bar" style="margin-top:12px"><div class="fill purple" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="card" style="border-left:4px solid var(--gold)">
+        <h3>Subsystem Punch Summary</h3>
+        <div style="padding:4px 0">
+          <div style="display:flex;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border)"><span style="font-size:12px;font-weight:600">Total Open Punch</span><span style="font-size:18px;font-weight:800;color:var(--gold)">6</span></div>
+          <div style="display:flex;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border)"><span style="font-size:12px;color:var(--text2)">Category A - Critical</span><span class="badge red">0</span></div>
+          <div style="display:flex;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border)"><span style="font-size:12px;color:var(--text2)">Category B - Major</span><span class="badge gold">3</span></div>
+          <div style="display:flex;justify-content:space-between;padding:10px 12px"><span style="font-size:12px;color:var(--text2)">Category C - Minor</span><span class="badge blue">3</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h3>Task Status Distribution</h3><div class="chart-container"><canvas id="overviewPie"></canvas></div></div>
+      <div class="card"><h3>Punch List Status</h3><div class="chart-container"><canvas id="plPie"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- MILESTONES -->
+  <div id="milestones" class="panel">
+    <div class="card" style="margin-bottom:20px"><h3>Tasks by Milestone</h3><div class="chart-container tall"><canvas id="msBar"></canvas></div></div>
+    <div id="milestoneCards"></div>
+  </div>
+
+  <!-- SUBSYSTEMS -->
+  <div id="subsystems" class="panel">
+    <div class="search-wrap" id="subsysSearchWrap">
+      <input type="text" class="search-box" id="subsysSearch" placeholder="Search systems, subsystems, milestones..." oninput="filterSubsystems()" onfocus="onSearchFocus()" onblur="onSearchBlur()">
+      <div class="search-icon">&#128269;</div>
+      <div class="search-count" id="subsysCount">123 results</div>
+    </div>
+    <div class="filter-row">
+      <div class="filter-btn active" onclick="filterMs(this,'all')">All (123)</div>
+      <div class="filter-btn" onclick="filterMs(this,'PS5 - Milestone A')">A (2)</div>
+      <div class="filter-btn" onclick="filterMs(this,'PS5 - Milestone B')">B (13)</div>
+      <div class="filter-btn" onclick="filterMs(this,'PS5 - Milestone C')">C (8)</div>
+      <div class="filter-btn" onclick="filterMs(this,'PS5 - Milestone D')">D (11)</div>
+      <div class="filter-btn" onclick="filterMs(this,'PS5 - Milestone E')">E (17)</div>
+      <div class="filter-btn" onclick="filterMs(this,'PS5 - Milestone F')">F (14)</div>
+      <div class="filter-btn" onclick="filterMs(this,'PS5 - Milestone G')">G (15)</div>
+      <div class="filter-btn" onclick="filterMs(this,'PS5 - Milestone H')">H (32)</div>
+      <div class="filter-btn" onclick="filterMs(this,'PS5 - Milestone I')">I (11)</div>
+    </div>
+    <div class="table-scroll" id="subsysTableWrap">
+      <table id="subsysTable">
+        <thead><tr><th>#</th><th>System</th><th>Subsystem</th><th>MILESTONE</th><th style="text-align:right">Total</th><th style="text-align:right">Closed</th><th style="text-align:right">E-Open</th><th style="text-align:right">I-Open</th><th style="text-align:right">%</th><th style="text-align:center">A</th><th style="text-align:center">B</th><th style="text-align:center">C</th><th style="width:130px">Progress</th></tr></thead>
+        <tbody id="subsysBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PUNCH LIST -->
+  <div id="punchlist" class="panel">
+    <div class="grid g4" style="margin-bottom:20px">
+      <div class="card stat-card purple"><h3>Total Punch Items</h3><div class="value">2233</div><div class="label">All Categories</div></div>
+      <div class="card stat-card red"><h3>Originated (Open)</h3><div class="value">1766</div><div class="label">79.1% of Total</div></div>
+      <div class="card stat-card green"><h3>Closed</h3><div class="value">437</div><div class="label">19.6% of Total</div></div>
+      <div class="card stat-card blue"><h3>Completed</h3><div class="value">30</div><div class="label">Fully Resolved</div></div>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h3>Punch List by Category</h3><div class="chart-container"><canvas id="plCatChart"></canvas></div></div>
+      <div class="card"><h3>Punch List by Milestone</h3><div class="chart-container"><canvas id="plMsChart"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS -->
+  <div id="charts" class="panel">
+    <div class="grid g2">
+      <div class="card"><h3>Tasks by Milestone</h3><div class="chart-container tall"><canvas id="chartTasksMs"></canvas></div></div>
+      <div class="card"><h3>Completion Radar</h3><div class="chart-container tall"><canvas id="chartCompMs"></canvas></div></div>
+      <div class="card"><h3>Discipline Split</h3><div class="chart-container"><canvas id="chartDisc"></canvas></div></div>
+      <div class="card"><h3>Punch by Category per Milestone</h3><div class="chart-container tall"><canvas id="chartPlCross"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- SYSTEM VIEW -->
+  <div id="systemview" class="panel">
+    <div class="card" style="margin-bottom:20px"><h3>Progress by System Group</h3><div class="chart-container tall"><canvas id="chartSys"></canvas></div></div>
+    <div class="table-scroll">
+      <table><thead><tr><th>System</th><th style="text-align:right">Subsystems</th><th style="text-align:right">Total Tasks</th><th style="text-align:right">Closed</th><th style="text-align:right">Open</th><th style="text-align:right">%</th><th style="width:180px">Progress</th></tr></thead>
+      <tbody id="sysBody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<script>
+var DATA = {"totalTasks": 851, "closedTasks": 3, "openTasks": 848, "totalSubsystems": 123, "completeSubsystems": 0, "milestones": [{"name": "PS5 - Milestone A", "letter": "A", "subsystems": 2, "totalTasks": 119, "closedTasks": 2, "openTasks": 117, "completion": 1.68, "disciplines": [{"name": "E - Electrical", "totalTasks": 55, "closedTasks": 2, "openTasks": 53}, {"name": "I - Instrumentation", "totalTasks": 64, "closedTasks": 0, "openTasks": 64}]}, {"name": "PS5 - Milestone B", "letter": "B", "subsystems": 13, "totalTasks": 69, "closedTasks": 0, "openTasks": 69, "completion": 0.0, "disciplines": [{"name": "E - Electrical", "totalTasks": 53, "closedTasks": 0, "openTasks": 53}, {"name": "I - Instrumentation", "totalTasks": 16, "closedTasks": 0, "openTasks": 16}]}, {"name": "PS5 - Milestone C", "letter": "C", "subsystems": 8, "totalTasks": 57, "closedTasks": 0, "openTasks": 57, "completion": 0.0, "disciplines": [{"name": "E - Electrical", "totalTasks": 39, "closedTasks": 0, "openTasks": 39}, {"name": "I - Instrumentation", "totalTasks": 18, "closedTasks": 0, "openTasks": 18}]}, {"name": "PS5 - Milestone D", "letter": "D", "subsystems": 11, "totalTasks": 116, "closedTasks": 0, "openTasks": 116, "completion": 0.0, "disciplines": [{"name": "E - Electrical", "totalTasks": 91, "closedTasks": 0, "openTasks": 91}, {"name": "I - Instrumentation", "totalTasks": 25, "closedTasks": 0, "openTasks": 25}]}, {"name": "PS5 - Milestone E", "letter": "E", "subsystems": 17, "totalTasks": 65, "closedTasks": 0, "openTasks": 65, "completion": 0.0, "disciplines": [{"name": "E - Electrical", "totalTasks": 24, "closedTasks": 0, "openTasks": 24}, {"name": "I - Instrumentation", "totalTasks": 41, "closedTasks": 0, "openTasks": 41}]}, {"name": "PS5 - Milestone F", "letter": "F", "subsystems": 14, "totalTasks": 40, "closedTasks": 0, "openTasks": 40, "completion": 0.0, "disciplines": [{"name": "E - Electrical", "totalTasks": 18, "closedTasks": 0, "openTasks": 18}, {"name": "I - Instrumentation", "totalTasks": 22, "closedTasks": 0, "openTasks": 22}]}, {"name": "PS5 - Milestone G", "letter": "G", "subsystems": 15, "totalTasks": 81, "closedTasks": 1, "openTasks": 80, "completion": 1.23, "disciplines": [{"name": "E - Electrical", "totalTasks": 69, "closedTasks": 1, "openTasks": 68}, {"name": "I - Instrumentation", "totalTasks": 12, "closedTasks": 0, "openTasks": 12}]}, {"name": "PS5 - Milestone H", "letter": "H", "subsystems": 32, "totalTasks": 261, "closedTasks": 0, "openTasks": 261, "completion": 0.0, "disciplines": [{"name": "E - Electrical", "totalTasks": 174, "closedTasks": 0, "openTasks": 174}, {"name": "I - Instrumentation", "totalTasks": 87, "closedTasks": 0, "openTasks": 87}]}, {"name": "PS5 - Milestone I", "letter": "I", "subsystems": 11, "totalTasks": 43, "closedTasks": 0, "openTasks": 43, "completion": 0.0, "disciplines": [{"name": "E - Electrical", "totalTasks": 15, "closedTasks": 0, "openTasks": 15}, {"name": "I - Instrumentation", "totalTasks": 28, "closedTasks": 0, "openTasks": 28}]}], "subsystems": [{"system": "PS5-61 - Power distribution (HV, LV)", "subsystem": "PS5-61-07 - 0.4kV Switchboard EITS Building (PS5-61-IK-0001)", "mantrac": "", "milestone": "PS5 - Milestone A", "total": 55, "closed": 2, "elecOpen": 53, "instrOpen": 0, "pct": 3.6, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-91 - Multicore cables & JB", "subsystem": "PS5-91-01 - Multicore cables & JB", "mantrac": "YES / YES", "milestone": "PS5 - Milestone A", "total": 64, "closed": 0, "elecOpen": 0, "instrOpen": 64, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-06 - Auxiliaries power generation/distribution (UPS)", "subsystem": "PS5-06-02 - AC UPS - Power Generator Building", "mantrac": "", "milestone": "PS5 - Milestone B", "total": 6, "closed": 0, "elecOpen": 4, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-60 - Main Power Generation", "subsystem": "PS5-60-01 - Power Generation Package A", "mantrac": "YES / YES", "milestone": "PS5 - Milestone B", "total": 10, "closed": 0, "elecOpen": 10, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-60 - Main Power Generation", "subsystem": "PS5-60-02 - Power Gen Package A (UCP)", "mantrac": "YES / YES", "milestone": "PS5 - Milestone B", "total": 4, "closed": 0, "elecOpen": 0, "instrOpen": 4, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-60 - Main Power Generation", "subsystem": "PS5-60-04 - Power Generation Package B", "mantrac": "YES / YES", "milestone": "PS5 - Milestone B", "total": 10, "closed": 0, "elecOpen": 10, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-60 - Main Power Generation", "subsystem": "PS5-60-05 - Power Gen Package B (UCP)", "mantrac": "YES / YES", "milestone": "PS5 - Milestone B", "total": 4, "closed": 0, "elecOpen": 0, "instrOpen": 4, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-60 - Main Power Generation", "subsystem": "PS5-60-22 - Power Gen Master UCP", "mantrac": "YES / YES", "milestone": "PS5 - Milestone B", "total": 8, "closed": 0, "elecOpen": 5, "instrOpen": 3, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-61 - Power distribution (HV, LV)", "subsystem": "PS5-61-05 - 0.4kV Switchboard Power Generator Building (PS5-61-IK-0003)", "mantrac": "", "milestone": "PS5 - Milestone B", "total": 16, "closed": 0, "elecOpen": 16, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-62 - Lighting", "subsystem": "PS5-62-06 - CRO Generator Building Emergency Lighting DB  - PS5-05-IG-0025", "mantrac": "", "milestone": "PS5 - Milestone B", "total": 1, "closed": 0, "elecOpen": 1, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-62 - Lighting", "subsystem": "PS5-62-07 - CRO Generator Electrical Building Emergency Lighting DB  - PS5-05-IG-0026", "mantrac": "", "milestone": "PS5 - Milestone B", "total": 1, "closed": 0, "elecOpen": 1, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-62 - Lighting", "subsystem": "PS5-62-10 - CRO Generator Building Normal L&SP DB  - PS5-61-IG-0015", "mantrac": "", "milestone": "PS5 - Milestone B", "total": 1, "closed": 0, "elecOpen": 1, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-62 - Lighting", "subsystem": "PS5-62-11 - CRO Generator Electrical Building Normal L&SP DB  - PS5-61-IG-0016", "mantrac": "", "milestone": "PS5 - Milestone B", "total": 1, "closed": 0, "elecOpen": 1, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-71 - Fuel Oil / Diesel Oil", "subsystem": "PS5-71-21 - Diesel Transfer Pump A/B", "mantrac": "YES / YES", "milestone": "PS5 - Milestone B", "total": 4, "closed": 0, "elecOpen": 4, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-71 - Fuel Oil / Diesel Oil", "subsystem": "PS5-71-23 - Diesel Fuel Pre Pressure Module (UCP)", "mantrac": "YES / YES", "milestone": "PS5 - Milestone B", "total": 3, "closed": 0, "elecOpen": 0, "instrOpen": 3, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-01 - Fire Fighting Generation / Distribution", "subsystem": "PS5-01-01 - Fire Water Jockey Pump A/B", "mantrac": "", "milestone": "PS5 - Milestone C", "total": 8, "closed": 0, "elecOpen": 4, "instrOpen": 4, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-01 - Fire Fighting Generation / Distribution", "subsystem": "PS5-01-02 - Fire Water Pump A", "mantrac": "", "milestone": "PS5 - Milestone C", "total": 4, "closed": 0, "elecOpen": 2, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-01 - Fire Fighting Generation / Distribution", "subsystem": "PS5-01-03 - Fire Water Pump B", "mantrac": "", "milestone": "PS5 - Milestone C", "total": 4, "closed": 0, "elecOpen": 2, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-01 - Fire Fighting Generation / Distribution", "subsystem": "PS5-01-07 - Fire Water Ring Main & Distribution", "mantrac": "", "milestone": "PS5 - Milestone C", "total": 5, "closed": 0, "elecOpen": 0, "instrOpen": 5, "pct": 0.0, "punchA": 0, "punchB": 2, "punchC": 2}, {"system": "PS5-03 - ESD and Fire & gas", "subsystem": "PS5-03-20 - FZ-20 - Emergency Diesel Generator Enclosure", "mantrac": "", "milestone": "PS5 - Milestone C", "total": 2, "closed": 0, "elecOpen": 0, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-05 - Emergency power Generation/Distribution", "subsystem": "PS5-05-02 - Emergency Diesel Generator Package (UCP)", "mantrac": "", "milestone": "PS5 - Milestone C", "total": 5, "closed": 0, "elecOpen": 3, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-53 - Water Treatment", "subsystem": "PS5-53-01 - Utility Water / Storage Tank", "mantrac": "", "milestone": "PS5 - Milestone C", "total": 1, "closed": 0, "elecOpen": 0, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-61 - Power distribution (HV, LV)", "subsystem": "PS5-61-08 - Electrical Control System", "mantrac": "", "milestone": "PS5 - Milestone C", "total": 28, "closed": 0, "elecOpen": 28, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-09 - HVAC", "subsystem": "PS5-09-03 - HVAC for Generator Building", "mantrac": "", "milestone": "PS5 - Milestone D", "total": 9, "closed": 0, "elecOpen": 0, "instrOpen": 9, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-60 - Main Power Generation", "subsystem": "PS5-60-07 - Power Generation Package C", "mantrac": "YES / YES", "milestone": "PS5 - Milestone D", "total": 10, "closed": 0, "elecOpen": 10, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-60 - Main Power Generation", "subsystem": "PS5-60-08 - Power Gen Package C (UCP)", "mantrac": "YES / YES", "milestone": "PS5 - Milestone D", "total": 4, "closed": 0, "elecOpen": 0, "instrOpen": 4, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-60 - Main Power Generation", "subsystem": "PS5-60-10 - Power Generation Package D", "mantrac": "YES / YES", "milestone": "PS5 - Milestone D", "total": 10, "closed": 0, "elecOpen": 10, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-60 - Main Power Generation", "subsystem": "PS5-60-11 - Power Gen Package D (UCP)", "mantrac": "YES / YES", "milestone": "PS5 - Milestone D", "total": 4, "closed": 0, "elecOpen": 0, "instrOpen": 4, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-60 - Main Power Generation", "subsystem": "PS5-60-13 - Power Generation Package E", "mantrac": "", "milestone": "PS5 - Milestone D", "total": 10, "closed": 0, "elecOpen": 10, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-60 - Main Power Generation", "subsystem": "PS5-60-14 - Power Gen Package E (UCP)", "mantrac": "", "milestone": "PS5 - Milestone D", "total": 4, "closed": 0, "elecOpen": 0, "instrOpen": 4, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-60 - Main Power Generation", "subsystem": "PS5-60-16 - Power Generation Package F", "mantrac": "YES / YES", "milestone": "PS5 - Milestone D", "total": 10, "closed": 0, "elecOpen": 10, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-60 - Main Power Generation", "subsystem": "PS5-60-17 - Power Gen Package F (UCP)", "mantrac": "", "milestone": "PS5 - Milestone D", "total": 4, "closed": 0, "elecOpen": 0, "instrOpen": 4, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-61 - Power distribution (HV, LV)", "subsystem": "PS5-61-01 - 33kV Switchboard EITS Building (PS5-61-IJ-0001)", "mantrac": "", "milestone": "PS5 - Milestone D", "total": 37, "closed": 0, "elecOpen": 37, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-61 - Power distribution (HV, LV)", "subsystem": "PS5-61-06 - 0.4kV Switchboard Power Generator Building (PS5-61-IK-0006)", "mantrac": "", "milestone": "PS5 - Milestone D", "total": 14, "closed": 0, "elecOpen": 14, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-01 - Fire Fighting Generation / Distribution", "subsystem": "PS5-01-10 - Water Mist Package", "mantrac": "", "milestone": "PS5 - Milestone E", "total": 6, "closed": 0, "elecOpen": 0, "instrOpen": 6, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-01 - Fire Fighting Generation / Distribution", "subsystem": "PS5-01-11 - Inergen for Power Gen Building", "mantrac": "", "milestone": "PS5 - Milestone E", "total": 3, "closed": 0, "elecOpen": 0, "instrOpen": 3, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-03 - ESD and Fire & gas", "subsystem": "PS5-03-06 - FZ-06 - Transformer Area", "mantrac": "", "milestone": "PS5 - Milestone E", "total": 2, "closed": 0, "elecOpen": 0, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-03 - ESD and Fire & gas", "subsystem": "PS5-03-07 - FZ-07 - Pretreatment Area", "mantrac": "", "milestone": "PS5 - Milestone E", "total": 1, "closed": 0, "elecOpen": 0, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-03 - ESD and Fire & gas", "subsystem": "PS5-03-08 - FZ-08 - Utilities - Power Generation Area - External", "mantrac": "", "milestone": "PS5 - Milestone E", "total": 7, "closed": 0, "elecOpen": 0, "instrOpen": 7, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-03 - ESD and Fire & gas", "subsystem": "PS5-03-09 - FZ-09 - Power Generation Building - Engine Bay 1", "mantrac": "", "milestone": "PS5 - Milestone E", "total": 1, "closed": 0, "elecOpen": 0, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-03 - ESD and Fire & gas", "subsystem": "PS5-03-10 - FZ-10 - Power Generation Building - Engine Bay 2", "mantrac": "", "milestone": "PS5 - Milestone E", "total": 2, "closed": 0, "elecOpen": 0, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-03 - ESD and Fire & gas", "subsystem": "PS5-03-11 - FZ-11 - Power Generation Building - Engine Bay 3", "mantrac": "", "milestone": "PS5 - Milestone E", "total": 2, "closed": 0, "elecOpen": 0, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-03 - ESD and Fire & gas", "subsystem": "PS5-03-12 - FZ-12 - Power Generation Building - Engine Bay 4", "mantrac": "", "milestone": "PS5 - Milestone E", "total": 1, "closed": 0, "elecOpen": 0, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-03 - ESD and Fire & gas", "subsystem": "PS5-03-14 - FZ-14 - Power Generation Building - Switchgear Room", "mantrac": "YES / YES", "milestone": "PS5 - Milestone E", "total": 3, "closed": 0, "elecOpen": 0, "instrOpen": 3, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-04 - Surface Control & Supervision", "subsystem": "PS5-04-02 - Office Building SIS/FGS System", "mantrac": "", "milestone": "PS5 - Milestone E", "total": 8, "closed": 0, "elecOpen": 0, "instrOpen": 8, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-28 - Closed Drains / Open Drains", "subsystem": "PS5-28-04 - Closed Drain Drum and Pump 02", "mantrac": "", "milestone": "PS5 - Milestone E", "total": 7, "closed": 0, "elecOpen": 6, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-53 - Water Treatment", "subsystem": "PS5-53-02 - Water Distribution Pump A/B", "mantrac": "", "milestone": "PS5 - Milestone E", "total": 4, "closed": 0, "elecOpen": 4, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-60 - Main Power Generation", "subsystem": "PS5-60-19 - Power Generation Package G", "mantrac": "", "milestone": "PS5 - Milestone E", "total": 10, "closed": 0, "elecOpen": 10, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-60 - Main Power Generation", "subsystem": "PS5-60-20 - Power Gen Package G (UCP)", "mantrac": "", "milestone": "PS5 - Milestone E", "total": 4, "closed": 0, "elecOpen": 0, "instrOpen": 4, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-60 - Main Power Generation", "subsystem": "PS5-60-24 - Cooling Water Tank & Pump", "mantrac": "", "milestone": "PS5 - Milestone E", "total": 2, "closed": 0, "elecOpen": 2, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-60 - Main Power Generation", "subsystem": "PS5-60-25 - Cooling Water Maintenance Tank & Return Pump", "mantrac": "", "milestone": "PS5 - Milestone E", "total": 2, "closed": 0, "elecOpen": 2, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-01 - Fire Fighting Generation / Distribution", "subsystem": "PS5-01-05 - Foam Skid", "mantrac": "", "milestone": "PS5 - Milestone F", "total": 5, "closed": 0, "elecOpen": 2, "instrOpen": 3, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-01 - Fire Fighting Generation / Distribution", "subsystem": "PS5-01-08 - PS5 Deluge Valve Skid (PS5-01-UK-6100)", "mantrac": "", "milestone": "PS5 - Milestone F", "total": 3, "closed": 0, "elecOpen": 0, "instrOpen": 3, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-03 - ESD and Fire & gas", "subsystem": "PS5-03-04 - FZ-04 - Utilities - Diesel and Firewater Pumps Areas", "mantrac": "", "milestone": "PS5 - Milestone F", "total": 4, "closed": 0, "elecOpen": 1, "instrOpen": 3, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-08 - Telecom", "subsystem": "PS5-08-52 - Process & Security CCTV", "mantrac": "", "milestone": "PS5 - Milestone F", "total": 1, "closed": 0, "elecOpen": 1, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-53 - Water Treatment", "subsystem": "PS5-53-04 - Water Treatment Purification Package", "mantrac": "", "milestone": "PS5 - Milestone F", "total": 5, "closed": 0, "elecOpen": 3, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-61 - Power distribution (HV, LV)", "subsystem": "PS5-61-10 - Outdoor Valves Distribution Board - PS5-61-IG-0042", "mantrac": "", "milestone": "PS5 - Milestone F", "total": 2, "closed": 0, "elecOpen": 2, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-61 - Power distribution (HV, LV)", "subsystem": "PS5-61-11 - Outdoor Valves Distribution Board - PS5-61-IG-0043", "mantrac": "", "milestone": "PS5 - Milestone F", "total": 2, "closed": 0, "elecOpen": 2, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-71 - Fuel Oil / Diesel Oil", "subsystem": "PS5-71-14 - Diesel Fuel Transfer and Dispensing Station", "mantrac": "", "milestone": "PS5 - Milestone F", "total": 2, "closed": 0, "elecOpen": 2, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-71 - Fuel Oil / Diesel Oil", "subsystem": "PS5-71-15 - Diesel Fuel Storage Tank", "mantrac": "", "milestone": "PS5 - Milestone F", "total": 4, "closed": 0, "elecOpen": 0, "instrOpen": 4, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-71 - Fuel Oil / Diesel Oil", "subsystem": "PS5-71-16 - Diesel Fuel Supply Pump A/B", "mantrac": "", "milestone": "PS5 - Milestone F", "total": 4, "closed": 0, "elecOpen": 4, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-71 - Fuel Oil / Diesel Oil", "subsystem": "PS5-71-17 - Diesel Fuel Distribution Header", "mantrac": "", "milestone": "PS5 - Milestone F", "total": 1, "closed": 0, "elecOpen": 0, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-71 - Fuel Oil / Diesel Oil", "subsystem": "PS5-71-19 - Diesel Separator Module (UCP)", "mantrac": "", "milestone": "PS5 - Milestone F", "total": 3, "closed": 0, "elecOpen": 0, "instrOpen": 3, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-74 - Inert Gas / Nitrogen gen. and dist.", "subsystem": "PS5-74-01 - N2 Generation Skid", "mantrac": "", "milestone": "PS5 - Milestone F", "total": 1, "closed": 0, "elecOpen": 1, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-74 - Inert Gas / Nitrogen gen. and dist.", "subsystem": "PS5-74-02 - N2 Generation Skid (UCP)", "mantrac": "", "milestone": "PS5 - Milestone F", "total": 3, "closed": 0, "elecOpen": 0, "instrOpen": 3, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-28 - Closed Drains / Open Drains", "subsystem": "PS5-28-03 - Closed Drain Drum and Pump 01", "mantrac": "", "milestone": "PS5 - Milestone G", "total": 5, "closed": 0, "elecOpen": 4, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-28 - Closed Drains / Open Drains", "subsystem": "PS5-28-06 - Relief Drum and Pump", "mantrac": "", "milestone": "PS5 - Milestone G", "total": 3, "closed": 0, "elecOpen": 2, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-28 - Closed Drains / Open Drains", "subsystem": "PS5-28-07 - Open Drains (OD2)", "mantrac": "", "milestone": "PS5 - Milestone G", "total": 2, "closed": 0, "elecOpen": 0, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-28 - Closed Drains / Open Drains", "subsystem": "PS5-28-08 - Open Drain Sump and Pumps", "mantrac": "", "milestone": "PS5 - Milestone G", "total": 8, "closed": 0, "elecOpen": 8, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-61 - Power distribution (HV, LV)", "subsystem": "PS5-61-02 - 6.6kV Switchboard and Transformer LLHT North - EITS Building (PS5-61-IJ-0010)", "mantrac": "", "milestone": "PS5 - Milestone G", "total": 17, "closed": 1, "elecOpen": 16, "instrOpen": 0, "pct": 5.9, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-61 - Power distribution (HV, LV)", "subsystem": "PS5-61-03 - 6.6kV Switchboard and Transformer LLHT South - EITS Building (PS5-61-IJ-0011)", "mantrac": "", "milestone": "PS5 - Milestone G", "total": 17, "closed": 0, "elecOpen": 17, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-61 - Power distribution (HV, LV)", "subsystem": "PS5-61-09 - Outdoor Power Distribution Board - PS5-61-IG-0014", "mantrac": "", "milestone": "PS5 - Milestone G", "total": 2, "closed": 0, "elecOpen": 2, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-62 - Lighting", "subsystem": "PS5-62-02 - Lighting Control Panel - PS5-62-IE-0002", "mantrac": "", "milestone": "PS5 - Milestone G", "total": 1, "closed": 0, "elecOpen": 1, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-62 - Lighting", "subsystem": "PS5-62-03 - Outdoor Emergency Lighting DB  - PS5-05-IG-0004", "mantrac": "", "milestone": "PS5 - Milestone G", "total": 2, "closed": 0, "elecOpen": 2, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-62 - Lighting", "subsystem": "PS5-62-04 - Outdoor Emergency Lighting DB  - PS5-05-IG-0006", "mantrac": "", "milestone": "PS5 - Milestone G", "total": 2, "closed": 0, "elecOpen": 2, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-62 - Lighting", "subsystem": "PS5-62-08 - Outdoor Normal Lighting  DB  - PS5-61-IG-0006", "mantrac": "", "milestone": "PS5 - Milestone G", "total": 2, "closed": 0, "elecOpen": 2, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-62 - Lighting", "subsystem": "PS5-62-09 - Outdoor Normal Lighting DB  - PS5-61-IG-0007", "mantrac": "", "milestone": "PS5 - Milestone G", "total": 2, "closed": 0, "elecOpen": 2, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-75 - Chemical storage & injection", "subsystem": "PS5-75-01 - DRA Injection Package", "mantrac": "", "milestone": "PS5 - Milestone G", "total": 6, "closed": 0, "elecOpen": 2, "instrOpen": 4, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-75 - Chemical storage & injection", "subsystem": "PS5-75-02 - Biocide Injection Package", "mantrac": "", "milestone": "PS5 - Milestone G", "total": 6, "closed": 0, "elecOpen": 4, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-75 - Chemical storage & injection", "subsystem": "PS5-75-03 - Corrosion Inhibitor Injection Package", "mantrac": "", "milestone": "PS5 - Milestone G", "total": 6, "closed": 0, "elecOpen": 4, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-03 - ESD and Fire & gas", "subsystem": "PS5-03-01 - FZ-01 - Process Area", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 15, "closed": 0, "elecOpen": 8, "instrOpen": 7, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-03 - ESD and Fire & gas", "subsystem": "PS5-03-03 - FZ-03 - Buildings Area", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 2, "closed": 0, "elecOpen": 0, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-25 - Export / Off Loading", "subsystem": "PS5-25-01 - Export Pipeline Pig Receiver", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 3, "closed": 0, "elecOpen": 1, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-25 - Export / Off Loading", "subsystem": "PS5-25-02 - Crude Oil Export Pump A", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 53, "closed": 0, "elecOpen": 40, "instrOpen": 13, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-25 - Export / Off Loading", "subsystem": "PS5-25-03 - Crude Oil Export Pump B", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 52, "closed": 0, "elecOpen": 39, "instrOpen": 13, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-25 - Export / Off Loading", "subsystem": "PS5-25-04 - Crude Oil Export Pump C", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 52, "closed": 0, "elecOpen": 39, "instrOpen": 13, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-25 - Export / Off Loading", "subsystem": "PS5-25-06 - Crude Oil Export Pumps Discharge", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 1, "closed": 0, "elecOpen": 1, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-25 - Export / Off Loading", "subsystem": "PS5-25-07 - Export Pipeline Pig Launcher", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 10, "closed": 0, "elecOpen": 0, "instrOpen": 10, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-28 - Closed Drains / Open Drains", "subsystem": "PS5-28-13 - Seal Oil Drain Drum & Pump A", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 2, "closed": 0, "elecOpen": 2, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-28 - Closed Drains / Open Drains", "subsystem": "PS5-28-14 - Seal Oil Drain Drum & Pump B", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 2, "closed": 0, "elecOpen": 2, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-28 - Closed Drains / Open Drains", "subsystem": "PS5-28-15 - Seal Oil Drain Drum & Pump C", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 2, "closed": 0, "elecOpen": 2, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-28 - Closed Drains / Open Drains", "subsystem": "PS5-28-17 - Reinjection Pump", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 7, "closed": 0, "elecOpen": 6, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-71 - Fuel Oil / Diesel Oil", "subsystem": "PS5-71-01 - CFO Storage Tank Feed Heater", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 12, "closed": 0, "elecOpen": 10, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-71 - Fuel Oil / Diesel Oil", "subsystem": "PS5-71-02 - CFO Allocation Metering Package", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 3, "closed": 0, "elecOpen": 0, "instrOpen": 3, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-71 - Fuel Oil / Diesel Oil", "subsystem": "PS5-71-04 - CFO Storage Tank", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 2, "closed": 0, "elecOpen": 2, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-71 - Fuel Oil / Diesel Oil", "subsystem": "PS5-71-05 - CFO Transfer Pump A/B", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 4, "closed": 0, "elecOpen": 4, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-71 - Fuel Oil / Diesel Oil", "subsystem": "PS5-71-07 - Crude Fuel Separation Module (UCP)", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 6, "closed": 0, "elecOpen": 0, "instrOpen": 6, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-71 - Fuel Oil / Diesel Oil", "subsystem": "PS5-71-09 - CFO Pre-Pressure Modules (UCP)", "mantrac": "YES / NO", "milestone": "PS5 - Milestone H", "total": 3, "closed": 0, "elecOpen": 0, "instrOpen": 3, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-71 - Fuel Oil / Diesel Oil", "subsystem": "PS5-71-12 - CFO Service Tank", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 2, "closed": 0, "elecOpen": 2, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-71 - Fuel Oil / Diesel Oil", "subsystem": "PS5-71-13 - CFO Service Pump A/B", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 4, "closed": 0, "elecOpen": 4, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-79 - Insulation/trace Heating", "subsystem": "PS5-79-01 - Electrical Heat Tracing Transformer/Distribution Board 1 (PS5-79-IG-0001)", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 2, "closed": 0, "elecOpen": 1, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-79 - Insulation/trace Heating", "subsystem": "PS5-79-02 - Electrical Heat Tracing Transformer/Distribution Board 2 (PS5-79-IG-0002)", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 2, "closed": 0, "elecOpen": 1, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-79 - Insulation/trace Heating", "subsystem": "PS5-79-03 - Electrical Heat Tracing Transformer/Distribution Board 3 (PS5-79-IG-0003)", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 2, "closed": 0, "elecOpen": 1, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-79 - Insulation/trace Heating", "subsystem": "PS5-79-04 - Electrical Heat Tracing Transformer/Distribution Board 4 (PS5-79-IG-0004)", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 2, "closed": 0, "elecOpen": 1, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-79 - Insulation/trace Heating", "subsystem": "PS5-79-05 - Electrical Heat Tracing Transformer/Distribution Board 5 (PS5-79-IG-0005)", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 2, "closed": 0, "elecOpen": 1, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-79 - Insulation/trace Heating", "subsystem": "PS5-79-06 - Electrical Heat Tracing Transformer/Distribution Board 6 (PS5-79-IG-0006)", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 2, "closed": 0, "elecOpen": 1, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-79 - Insulation/trace Heating", "subsystem": "PS5-79-07 - Electrical Heat Tracing Transformer/Distribution Board 7 (PS5-79-IG-0007)", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 2, "closed": 0, "elecOpen": 1, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-79 - Insulation/trace Heating", "subsystem": "PS5-79-08 - Electrical Heat Tracing Transformer/Distribution Board 8 (PS5-79-IG-0008)", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 2, "closed": 0, "elecOpen": 1, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-79 - Insulation/trace Heating", "subsystem": "PS5-79-09 - Electrical Heat Tracing Transformer/Distribution Board 9 (PS5-79-IG-0009)", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 2, "closed": 0, "elecOpen": 1, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-79 - Insulation/trace Heating", "subsystem": "PS5-79-10 - Electrical Heat Tracing Transformer/Distribution Board 10 (PS5-79-IG-0010)", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 2, "closed": 0, "elecOpen": 1, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-79 - Insulation/trace Heating", "subsystem": "PS5-79-11 - Electrical Heat Tracing Transformer/Distribution Board 11 (PS5-79-IG-0011)", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 2, "closed": 0, "elecOpen": 1, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-79 - Insulation/trace Heating", "subsystem": "PS5-79-12 - Electrical Heat Tracing Transformer/Distribution Board 12 (PS5-79-IG-0012)", "mantrac": "", "milestone": "PS5 - Milestone H", "total": 2, "closed": 0, "elecOpen": 1, "instrOpen": 1, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-03 - ESD and Fire & gas", "subsystem": "PS5-03-22 - FZ-G1 - Guard House", "mantrac": "", "milestone": "PS5 - Milestone I", "total": 2, "closed": 0, "elecOpen": 0, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-03 - ESD and Fire & gas", "subsystem": "PS5-03-24 - FZ - Office and Facilities Building", "mantrac": "", "milestone": "PS5 - Milestone I", "total": 2, "closed": 0, "elecOpen": 0, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-03 - ESD and Fire & gas", "subsystem": "PS5-03-25 - FZ - Workshop & Warehouse", "mantrac": "", "milestone": "PS5 - Milestone I", "total": 2, "closed": 0, "elecOpen": 0, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-09 - HVAC", "subsystem": "PS5-09-01 - HVAC for Office and Facilities building", "mantrac": "", "milestone": "PS5 - Milestone I", "total": 7, "closed": 0, "elecOpen": 0, "instrOpen": 7, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-09 - HVAC", "subsystem": "PS5-09-04 - HVAC for Workshop & Warehouse", "mantrac": "", "milestone": "PS5 - Milestone I", "total": 5, "closed": 0, "elecOpen": 0, "instrOpen": 5, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-28 - Closed Drains / Open Drains", "subsystem": "PS5-28-10 - Oil Skimmer Package", "mantrac": "", "milestone": "PS5 - Milestone I", "total": 2, "closed": 0, "elecOpen": 2, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-28 - Closed Drains / Open Drains", "subsystem": "PS5-28-11 - Open Drain Interceptor", "mantrac": "", "milestone": "PS5 - Milestone I", "total": 2, "closed": 0, "elecOpen": 0, "instrOpen": 2, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-50 - Water Lifting", "subsystem": "PS5-50-01 - Water Well Submersible Pumps (3100)", "mantrac": "", "milestone": "PS5 - Milestone I", "total": 5, "closed": 0, "elecOpen": 1, "instrOpen": 4, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-50 - Water Lifting", "subsystem": "PS5-50-02 - Water Well Submersible Pumps (3200)", "mantrac": "", "milestone": "PS5 - Milestone I", "total": 5, "closed": 0, "elecOpen": 1, "instrOpen": 4, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-61 - Power distribution (HV, LV)", "subsystem": "PS5-61-04 - 0.4kV Switchboard Office & Facilities Building (PS5-61-IK-0005)", "mantrac": "", "milestone": "PS5 - Milestone I", "total": 10, "closed": 0, "elecOpen": 10, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}, {"system": "PS5-82 - Liv.Quarter/Catering/Sewage/Offices", "subsystem": "PS5-82-02 - Sewage Treatment Plant Package", "mantrac": "", "milestone": "PS5 - Milestone I", "total": 1, "closed": 0, "elecOpen": 1, "instrOpen": 0, "pct": 0.0, "punchA": 0, "punchB": 0, "punchC": 0}], "taskByMilestone": [{"Subsystem Priority": "PS5 - Milestone A", "total": 119, "closed": 2, "started": 0, "pending": 117}, {"Subsystem Priority": "PS5 - Milestone B", "total": 69, "closed": 0, "started": 1, "pending": 68}, {"Subsystem Priority": "PS5 - Milestone C", "total": 57, "closed": 0, "started": 1, "pending": 56}, {"Subsystem Priority": "PS5 - Milestone D", "total": 116, "closed": 0, "started": 0, "pending": 116}, {"Subsystem Priority": "PS5 - Milestone E", "total": 65, "closed": 0, "started": 0, "pending": 65}, {"Subsystem Priority": "PS5 - Milestone F", "total": 40, "closed": 0, "started": 0, "pending": 40}, {"Subsystem Priority": "PS5 - Milestone G", "total": 81, "closed": 1, "started": 0, "pending": 80}, {"Subsystem Priority": "PS5 - Milestone H", "total": 261, "closed": 0, "started": 1, "pending": 260}, {"Subsystem Priority": "PS5 - Milestone I", "total": 43, "closed": 0, "started": 0, "pending": 43}], "plByMilestone": [{"Priority": "PS5 - Milestone A", "total": 462, "originated": 416, "closed": 42, "completed": 4}, {"Priority": "PS5 - Milestone B", "total": 428, "originated": 359, "closed": 67, "completed": 2}, {"Priority": "PS5 - Milestone C", "total": 165, "originated": 90, "closed": 72, "completed": 3}, {"Priority": "PS5 - Milestone D", "total": 411, "originated": 341, "closed": 68, "completed": 2}, {"Priority": "PS5 - Milestone E", "total": 192, "originated": 112, "closed": 77, "completed": 3}, {"Priority": "PS5 - Milestone F", "total": 102, "originated": 90, "closed": 10, "completed": 2}, {"Priority": "PS5 - Milestone G", "total": 57, "originated": 49, "closed": 8, "completed": 0}, {"Priority": "PS5 - Milestone H", "total": 361, "originated": 255, "closed": 93, "completed": 13}, {"Priority": "PS5 - Milestone I", "total": 55, "originated": 54, "closed": 0, "completed": 1}], "plByCategory": {"A - Critical": 724, "B - Major": 1104, "C - Minor": 403}, "plCross": {"A": {"A": 168, "B": 251, "C": 43}, "B": {"A": 83, "B": 274, "C": 70}, "C": {"A": 101, "B": 28, "C": 36}, "D": {"A": 123, "B": 208, "C": 80}, "E": {"A": 30, "B": 91, "C": 71}, "F": {"A": 24, "B": 51, "C": 27}, "G": {"A": 14, "B": 38, "C": 5}, "H": {"A": 173, "B": 125, "C": 62}, "I": {"A": 8, "B": 38, "C": 9}}, "totalPL": 2233, "closedPL": 437, "completedPL": 30, "originatedPL": 1766, "elecTasks": 538, "elecClosed": 3, "instrTasks": 313, "instrClosed": 0, "sysSummary": [{"system": "PS5-01 - Fire Fighting Generation / Distribution", "total": 38, "closed": 0, "count": 8, "pct": 0.0}, {"system": "PS5-03 - ESD and Fire & gas", "total": 48, "closed": 0, "count": 15, "pct": 0.0}, {"system": "PS5-04 - Surface Control & Supervision", "total": 8, "closed": 0, "count": 1, "pct": 0.0}, {"system": "PS5-05 - Emergency power Generation/Distribution", "total": 5, "closed": 0, "count": 1, "pct": 0.0}, {"system": "PS5-06 - Auxiliaries power generation/distribution (UPS)", "total": 6, "closed": 0, "count": 1, "pct": 0.0}, {"system": "PS5-08 - Telecom", "total": 1, "closed": 0, "count": 1, "pct": 0.0}, {"system": "PS5-09 - HVAC", "total": 21, "closed": 0, "count": 3, "pct": 0.0}, {"system": "PS5-25 - Export / Off Loading", "total": 171, "closed": 0, "count": 6, "pct": 0.0}, {"system": "PS5-28 - Closed Drains / Open Drains", "total": 42, "closed": 0, "count": 11, "pct": 0.0}, {"system": "PS5-50 - Water Lifting", "total": 10, "closed": 0, "count": 2, "pct": 0.0}, {"system": "PS5-53 - Water Treatment", "total": 10, "closed": 0, "count": 3, "pct": 0.0}, {"system": "PS5-60 - Main Power Generation", "total": 110, "closed": 0, "count": 17, "pct": 0.0}, {"system": "PS5-61 - Power distribution (HV, LV)", "total": 200, "closed": 3, "count": 11, "pct": 1.5}, {"system": "PS5-62 - Lighting", "total": 13, "closed": 0, "count": 9, "pct": 0.0}, {"system": "PS5-71 - Fuel Oil / Diesel Oil", "total": 57, "closed": 0, "count": 15, "pct": 0.0}, {"system": "PS5-74 - Inert Gas / Nitrogen gen. and dist.", "total": 4, "closed": 0, "count": 2, "pct": 0.0}, {"system": "PS5-75 - Chemical storage & injection", "total": 18, "closed": 0, "count": 3, "pct": 0.0}, {"system": "PS5-79 - Insulation/trace Heating", "total": 24, "closed": 0, "count": 12, "pct": 0.0}, {"system": "PS5-82 - Liv.Quarter/Catering/Sewage/Offices", "total": 1, "closed": 0, "count": 1, "pct": 0.0}, {"system": "PS5-91 - Multicore cables & JB", "total": 64, "closed": 0, "count": 1, "pct": 0.0}]};
+var searchActive = false;
+Chart.defaults.color = '#6b5e4d';
+Chart.defaults.borderColor = '#d9d0c1';
+Chart.defaults.font.family = "'Inter',system-ui,sans-serif";
+
+var msColors = ['#c8940a','#c53030','#1a8a4a','#2563eb','#7c3aed','#ec4899','#0891b2','#d97706','#6366f1'];
+var msColorsAlpha = ['rgba(200,148,10,0.7)','rgba(197,48,48,0.7)','rgba(26,138,74,0.7)','rgba(37,99,235,0.7)','rgba(124,58,237,0.7)','rgba(236,72,153,0.7)','rgba(8,145,178,0.7)','rgba(217,119,6,0.7)','rgba(99,102,241,0.7)'];
+
+function showPanel(id, el) {
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active') });
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active') });
+  document.getElementById(id).classList.add('active');
+  el.classList.add('active');
+  if (id === 'charts') initCharts();
+  if (id === 'punchlist') initPunchList();
+  if (id === 'systemview') initSystemView();
+}
+
+function initOverview() {
+  new Chart(document.getElementById('overviewPie'), {
+    type: 'doughnut',
+    data: { labels: ['Closed (3)', 'Started (3)', 'Pending (845)'], datasets: [{ data: [3, 3, 845], backgroundColor: ['#1a8a4a','#c8940a','#c53030'], borderWidth: 3, borderColor: '#fffcf7', hoverOffset: 10 }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle', color: '#6b5e4d' } } } }
+  });
+  new Chart(document.getElementById('plPie'), {
+    type: 'doughnut',
+    data: { labels: ['Originated (1766)', 'Closed (437)', 'Completed (30)'], datasets: [{ data: [1766, 437, 30], backgroundColor: ['#c53030','#1a8a4a','#2563eb'], borderWidth: 3, borderColor: '#fffcf7', hoverOffset: 10 }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle', color: '#6b5e4d' } } } }
+  });
+}
+
+function initMilestones() {
+  var sorted = DATA.milestones.slice().sort(function(a,b){ return a.name.localeCompare(b.name) });
+  var labels = sorted.map(function(m){ return 'Milestone ' + m.letter });
+  new Chart(document.getElementById('msBar'), {
+    type: 'bar',
+    data: { labels: labels, datasets: [
+      { label: 'Closed', data: sorted.map(function(m){ return m.closedTasks }), backgroundColor: '#1a8a4a', borderRadius: 6, barPercentage: 0.65 },
+      { label: 'Open', data: sorted.map(function(m){ return m.openTasks }), backgroundColor: '#c53030', borderRadius: 6, barPercentage: 0.65 }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false,
+      scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, grid: { color: '#ede7db' } } },
+      plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'circle', padding: 16, color: '#6b5e4d' } } }
+    }
+  });
+  var container = document.getElementById('milestoneCards');
+  container.innerHTML = '';
+  sorted.forEach(function(m, i) {
+    var discHtml = m.disciplines.map(function(d) {
+      return '<div style="display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="font-weight:500">' + d.name + '</span><span><span style="color:#1a8a4a;font-weight:700">' + d.closedTasks + '</span> / ' + d.totalTasks + '</span></div>';
+    }).join('');
+    container.innerHTML += '<div class="ms-card" style="border-left:5px solid ' + msColors[i % msColors.length] + '">' +
+      '<div class="ms-header"><h4 style="color:' + msColors[i % msColors.length] + '">Milestone ' + m.letter + '</h4><span class="badge ' + (m.completion > 0 ? 'green' : 'red') + '">' + m.completion + '% Complete</span></div>' +
+      '<div class="ms-stats"><div class="ms-stat"><div class="num" style="color:#c8940a">' + m.subsystems + '</div><div class="lbl">Subsystems</div></div><div class="ms-stat"><div class="num" style="color:#0891b2">' + m.totalTasks + '</div><div class="lbl">Total Tasks</div></div><div class="ms-stat"><div class="num" style="color:#1a8a4a">' + m.closedTasks + '</div><div class="lbl">Closed</div></div><div class="ms-stat"><div class="num" style="color:#c53030">' + m.openTasks + '</div><div class="lbl">Open</div></div></div>' +
+      '<div class="progress-bar" style="margin-top:14px;height:10px"><div class="fill green" style="width:' + Math.max(m.completion, 0.5) + '%"></div></div>' +
+      '<div style="margin-top:12px;background:var(--card2);border-radius:10px;padding:6px 0;border:1px solid var(--border)">' + discHtml + '</div></div>';
+  });
+}
+
+var currentMsFilter = 'all';
+function initSubsystems() { renderSubsystems(); }
+function filterMs(el, ms) { currentMsFilter = ms; document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active') }); el.classList.add('active'); renderSubsystems(); }
+function onSearchFocus() { searchActive = true; document.getElementById('subsysSearchWrap').classList.add('search-active'); document.getElementById('mainHeader').classList.add('searching-mode'); }
+function onSearchBlur() { if (!document.getElementById('subsysSearch').value) { searchActive = false; document.getElementById('subsysSearchWrap').classList.remove('search-active'); document.getElementById('mainHeader').classList.remove('searching-mode'); } }
+function filterSubsystems() { renderSubsystems(); }
+function highlightText(text, query) { if (!query) return text; var regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'); return text.replace(regex, '<span class="search-highlight">$1</span>'); }
+function renderSubsystems() {
+  var query = document.getElementById('subsysSearch').value.toLowerCase();
+  var filtered = DATA.subsystems.filter(function(s) {
+    var matchSearch = !query || s.system.toLowerCase().indexOf(query) >= 0 || s.subsystem.toLowerCase().indexOf(query) >= 0 || s.milestone.toLowerCase().indexOf(query) >= 0;
+    var matchMs = currentMsFilter === 'all' || s.milestone === currentMsFilter;
+    return matchSearch && matchMs;
+  });
+  var isSearching = query.length > 0;
+  var tableWrap = document.getElementById('subsysTableWrap');
+  if (isSearching) tableWrap.classList.add('searching'); else tableWrap.classList.remove('searching');
+  document.getElementById('subsysCount').textContent = filtered.length + ' results';
+  document.getElementById('subsysBody').innerHTML = filtered.map(function(s, idx) {
+    var pct = s.total > 0 ? (s.closed / s.total * 100).toFixed(1) : '0.0';
+    var fillColor = pct >= 50 ? 'green' : pct > 0 ? 'gold' : 'red';
+    var systemText = highlightText(s.system, document.getElementById('subsysSearch').value);
+    var subsystemText = highlightText(s.subsystem, document.getElementById('subsysSearch').value);
+    return '<tr class="' + (isSearching ? 'search-match' : '') + '">' +
+      '<td style="color:var(--text3);font-size:10px">' + (idx + 1) + '</td>' +
+      '<td style="font-size:11px;max-width:200px;word-break:break-all;color:var(--text2)">' + systemText + '</td>' +
+      '<td style="font-size:11px;max-width:260px;word-break:break-all;font-weight:500">' + subsystemText + '</td>' +
+      '<td><span class="badge steel">' + s.milestone.replace('PS5 - ','') + '</span></td>' +
+      '<td style="text-align:right;font-weight:800">' + s.total + '</td>' +
+      '<td style="text-align:right;color:#1a8a4a;font-weight:700">' + s.closed + '</td>' +
+      '<td style="text-align:right;color:#2563eb">' + s.elecOpen + '</td>' +
+      '<td style="text-align:right;color:#7c3aed">' + s.instrOpen + '</td>' +
+      '<td style="text-align:right;font-weight:800">' + pct + '%</td>' +
+      '<td style="text-align:center">' + (s.punchA > 0 ? '<span class="badge red">' + s.punchA + '</span>' : '<span style="color:var(--text3)">-</span>') + '</td>' +
+      '<td style="text-align:center">' + (s.punchB > 0 ? '<span class="badge gold">' + s.punchB + '</span>' : '<span style="color:var(--text3)">-</span>') + '</td>' +
+      '<td style="text-align:center">' + (s.punchC > 0 ? '<span class="badge blue">' + s.punchC + '</span>' : '<span style="color:var(--text3)">-</span>') + '</td>' +
+      '<td><div class="progress-bar" style="height:6px"><div class="fill ' + fillColor + '" style="width:' + pct + '%"></div></div></td></tr>';
+  }).join('');
+}
+
+var punchListInit = false;
+function initPunchList() {
+  if (punchListInit) return; punchListInit = true;
+  new Chart(document.getElementById('plCatChart'), {
+    type: 'doughnut',
+    data: { labels: Object.keys(DATA.plByCategory), datasets: [{ data: Object.values(DATA.plByCategory), backgroundColor: ['#c53030','#c8940a','#0891b2'], borderWidth: 3, borderColor: '#fffcf7', hoverOffset: 10 }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle', color: '#6b5e4d' } } } }
+  });
+  var plSorted = DATA.plByMilestone.slice().sort(function(a,b){ return (a.Priority||'').localeCompare(b.Priority||''); });
+  new Chart(document.getElementById('plMsChart'), {
+    type: 'bar',
+    data: { labels: plSorted.map(function(p){ return (p.Priority||'').replace('PS5 - ','') }),
+      datasets: [
+        { label: 'Originated', data: plSorted.map(function(p){return p.originated}), backgroundColor: '#c53030', borderRadius: 4 },
+        { label: 'Closed', data: plSorted.map(function(p){return p.closed}), backgroundColor: '#1a8a4a', borderRadius: 4 },
+        { label: 'Completed', data: plSorted.map(function(p){return p.completed}), backgroundColor: '#2563eb', borderRadius: 4 }
+      ]},
+    options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, grid: { color: '#ede7db' } } }, plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'circle', padding: 16, color: '#6b5e4d' } } } }
+  });
+}
+
+var chartsInitialized = false;
+function initCharts() {
+  if (chartsInitialized) return; chartsInitialized = true;
+  var sorted = DATA.milestones.slice().sort(function(a,b){ return a.name.localeCompare(b.name) });
+  var labels = sorted.map(function(m){ return 'Ms ' + m.letter });
+  new Chart(document.getElementById('chartTasksMs'), {
+    type: 'bar', data: { labels: labels, datasets: [
+      { label: 'Total Tasks', data: sorted.map(function(m){ return m.totalTasks }), backgroundColor: msColorsAlpha, borderRadius: 6, barPercentage: 0.7 },
+      { label: 'Closed', data: sorted.map(function(m){ return m.closedTasks }), backgroundColor: '#1a8a4a', borderRadius: 6, barPercentage: 0.7 }
+    ]}, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: '#ede7db' } }, x: { grid: { display: false } } }, plugins: { legend: { labels: { usePointStyle: true, pointStyle: 'circle', color: '#6b5e4d' } } } }
+  });
+  new Chart(document.getElementById('chartCompMs'), {
+    type: 'radar', data: { labels: sorted.map(function(m){ return 'Ms ' + m.letter }), datasets: [{
+      label: 'Completion %', data: sorted.map(function(m){ return m.completion }),
+      backgroundColor: 'rgba(200,148,10,0.15)', borderColor: '#c8940a', pointBackgroundColor: '#c8940a', pointBorderColor: '#fffcf7', pointBorderWidth: 2, borderWidth: 2
+    }]}, options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 5, ticks: { stepSize: 1, backdropColor: 'transparent' }, grid: { color: '#ede7db' }, angleLines: { color: '#ede7db' }, pointLabels: { color: '#6b5e4d' } } }, plugins: { legend: { display: false } } }
+  });
+  new Chart(document.getElementById('chartDisc'), {
+    type: 'doughnut', data: { labels: ['E - Electrical (538)', 'I - Instrumentation (313)'], datasets: [{ data: [538, 313], backgroundColor: ['#2563eb', '#7c3aed'], borderWidth: 3, borderColor: '#fffcf7', hoverOffset: 10 }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle', color: '#6b5e4d' } } } }
+  });
+  var plLetters = Object.keys(DATA.plCross).sort();
+  new Chart(document.getElementById('chartPlCross'), {
+    type: 'bar', data: { labels: plLetters.map(function(l){ return 'Ms ' + l }),
+      datasets: [
+        { label: 'A - Critical', data: plLetters.map(function(l){ return DATA.plCross[l].A }), backgroundColor: '#c53030', borderRadius: 4 },
+        { label: 'B - Major', data: plLetters.map(function(l){ return DATA.plCross[l].B }), backgroundColor: '#c8940a', borderRadius: 4 },
+        { label: 'C - Minor', data: plLetters.map(function(l){ return DATA.plCross[l].C }), backgroundColor: '#0891b2', borderRadius: 4 }
+      ]}, options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, grid: { color: '#ede7db' } } }, plugins: { legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'circle', padding: 16, color: '#6b5e4d' } } } }
+  });
+}
+
+var systemViewInit = false;
+function initSystemView() {
+  if (systemViewInit) return; systemViewInit = true;
+  document.getElementById('sysBody').innerHTML = DATA.sysSummary.map(function(s) {
+    var pctColor = s.pct >= 50 ? 'green' : s.pct > 0 ? 'gold' : 'red';
+    var open = s.total - s.closed;
+    return '<tr><td style="font-weight:600;font-size:12px">' + s.system + '</td><td style="text-align:right;color:var(--text2)">' + s.count + '</td><td style="text-align:right;font-weight:800">' + s.total + '</td><td style="text-align:right;color:#1a8a4a;font-weight:700">' + s.closed + '</td><td style="text-align:right;color:#c53030;font-weight:700">' + open + '</td><td style="text-align:right;font-weight:800">' + s.pct + '%</td><td><div class="progress-bar" style="height:8px"><div class="fill ' + pctColor + '" style="width:' + s.pct + '%"></div></div></td></tr>';
+  }).join('');
+  new Chart(document.getElementById('chartSys'), {
+    type: 'bar', data: { labels: DATA.sysSummary.map(function(s){ return s.system.replace('PS5-','') }),
+      datasets: [{ label: 'Total Tasks', data: DATA.sysSummary.map(function(s){ return s.total }), backgroundColor: DATA.sysSummary.map(function(s,i){ return msColors[i % msColors.length] + 'cc' }), borderRadius: 6 }]
+    }, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', scales: { x: { beginAtZero: true, grid: { color: '#ede7db' } }, y: { grid: { display: false }, ticks: { font: { size: 11 } } } }, plugins: { legend: { display: false } } }
+  });
+}
+
+initOverview();
+initMilestones();
+initSubsystems();
+</script>
+</body>
+</html>
