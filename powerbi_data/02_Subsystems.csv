@@ -1,0 +1,124 @@
+System,Subsystem,Mantrac,Milestone,Total,Closed,Open,Elec Open,Instr Open,Completion %,Punch A,Punch B,Punch C
+"PS5-61 - Power distribution (HV, LV)",PS5-61-07 - 0.4kV Switchboard EITS Building (PS5-61-IK-0001),,PS5 - Milestone A,55,17,38,38,0,30.9,0,0,0
+PS5-91 - Multicore cables & JB,PS5-91-01 - Multicore cables & JB,YES / YES,PS5 - Milestone A,64,0,64,0,64,0.0,0,0,0
+PS5-06 - Auxiliaries power generation/distribution (UPS),PS5-06-02 - AC UPS - Power Generator Building,,PS5 - Milestone B,6,0,6,4,2,0.0,0,0,0
+PS5-60 - Main Power Generation,PS5-60-01 - Power Generation Package A,YES / YES,PS5 - Milestone B,10,0,10,10,0,0.0,0,0,0
+PS5-60 - Main Power Generation,PS5-60-02 - Power Gen Package A (UCP),YES / YES,PS5 - Milestone B,4,0,4,0,4,0.0,0,0,0
+PS5-60 - Main Power Generation,PS5-60-04 - Power Generation Package B,YES / YES,PS5 - Milestone B,10,0,10,10,0,0.0,0,0,0
+PS5-60 - Main Power Generation,PS5-60-05 - Power Gen Package B (UCP),YES / YES,PS5 - Milestone B,4,0,4,0,4,0.0,0,0,0
+PS5-60 - Main Power Generation,PS5-60-22 - Power Gen Master UCP,YES / YES,PS5 - Milestone B,8,0,8,5,3,0.0,0,0,0
+"PS5-61 - Power distribution (HV, LV)",PS5-61-05 - 0.4kV Switchboard Power Generator Building (PS5-61-IK-0003),,PS5 - Milestone B,16,0,16,16,0,0.0,0,0,0
+PS5-62 - Lighting,PS5-62-06 - CRO Generator Building Emergency Lighting DB  - PS5-05-IG-0025,,PS5 - Milestone B,1,0,1,1,0,0.0,0,0,0
+PS5-62 - Lighting,PS5-62-07 - CRO Generator Electrical Building Emergency Lighting DB  - PS5-05-IG-0026,,PS5 - Milestone B,1,0,1,1,0,0.0,0,0,0
+PS5-62 - Lighting,PS5-62-10 - CRO Generator Building Normal L&SP DB  - PS5-61-IG-0015,,PS5 - Milestone B,1,0,1,1,0,0.0,0,0,0
+PS5-62 - Lighting,PS5-62-11 - CRO Generator Electrical Building Normal L&SP DB  - PS5-61-IG-0016,,PS5 - Milestone B,1,0,1,1,0,0.0,0,0,0
+PS5-71 - Fuel Oil / Diesel Oil,PS5-71-21 - Diesel Transfer Pump A/B,YES / YES,PS5 - Milestone B,4,0,4,4,0,0.0,0,0,0
+PS5-71 - Fuel Oil / Diesel Oil,PS5-71-23 - Diesel Fuel Pre Pressure Module (UCP),YES / YES,PS5 - Milestone B,3,0,3,0,3,0.0,0,0,0
+PS5-01 - Fire Fighting Generation / Distribution,PS5-01-01 - Fire Water Jockey Pump A/B,,PS5 - Milestone C,8,0,8,4,4,0.0,0,0,0
+PS5-01 - Fire Fighting Generation / Distribution,PS5-01-02 - Fire Water Pump A,,PS5 - Milestone C,4,0,4,2,2,0.0,0,0,0
+PS5-01 - Fire Fighting Generation / Distribution,PS5-01-03 - Fire Water Pump B,,PS5 - Milestone C,4,0,4,2,2,0.0,0,0,0
+PS5-01 - Fire Fighting Generation / Distribution,PS5-01-07 - Fire Water Ring Main & Distribution,,PS5 - Milestone C,5,0,5,0,5,0.0,0,17,17
+PS5-03 - ESD and Fire & gas,PS5-03-20 - FZ-20 - Emergency Diesel Generator Enclosure,,PS5 - Milestone C,2,0,2,0,2,0.0,0,0,0
+PS5-05 - Emergency power Generation/Distribution,PS5-05-02 - Emergency Diesel Generator Package (UCP),,PS5 - Milestone C,5,0,5,3,2,0.0,0,0,0
+PS5-53 - Water Treatment,PS5-53-01 - Utility Water / Storage Tank,,PS5 - Milestone C,1,0,1,0,1,0.0,0,0,0
+"PS5-61 - Power distribution (HV, LV)",PS5-61-08 - Electrical Control System,,PS5 - Milestone C,28,0,28,28,0,0.0,0,0,0
+PS5-09 - HVAC,PS5-09-03 - HVAC for Generator Building,,PS5 - Milestone D,9,0,9,0,9,0.0,0,0,0
+PS5-60 - Main Power Generation,PS5-60-07 - Power Generation Package C,YES / YES,PS5 - Milestone D,10,0,10,10,0,0.0,0,0,0
+PS5-60 - Main Power Generation,PS5-60-08 - Power Gen Package C (UCP),YES / YES,PS5 - Milestone D,4,0,4,0,4,0.0,0,0,0
+PS5-60 - Main Power Generation,PS5-60-10 - Power Generation Package D,YES / YES,PS5 - Milestone D,10,0,10,10,0,0.0,0,0,0
+PS5-60 - Main Power Generation,PS5-60-11 - Power Gen Package D (UCP),YES / YES,PS5 - Milestone D,4,0,4,0,4,0.0,0,0,0
+PS5-60 - Main Power Generation,PS5-60-13 - Power Generation Package E,,PS5 - Milestone D,10,0,10,10,0,0.0,0,0,0
+PS5-60 - Main Power Generation,PS5-60-14 - Power Gen Package E (UCP),,PS5 - Milestone D,4,0,4,0,4,0.0,0,0,0
+PS5-60 - Main Power Generation,PS5-60-16 - Power Generation Package F,YES / YES,PS5 - Milestone D,10,0,10,10,0,0.0,0,0,0
+PS5-60 - Main Power Generation,PS5-60-17 - Power Gen Package F (UCP),,PS5 - Milestone D,4,0,4,0,4,0.0,0,0,0
+"PS5-61 - Power distribution (HV, LV)",PS5-61-01 - 33kV Switchboard EITS Building (PS5-61-IJ-0001),,PS5 - Milestone D,37,0,37,37,0,0.0,0,0,0
+"PS5-61 - Power distribution (HV, LV)",PS5-61-06 - 0.4kV Switchboard Power Generator Building (PS5-61-IK-0006),,PS5 - Milestone D,14,0,14,14,0,0.0,0,0,0
+PS5-01 - Fire Fighting Generation / Distribution,PS5-01-10 - Water Mist Package,,PS5 - Milestone E,6,0,6,0,6,0.0,0,0,0
+PS5-01 - Fire Fighting Generation / Distribution,PS5-01-11 - Inergen for Power Gen Building,,PS5 - Milestone E,3,0,3,0,3,0.0,0,0,0
+PS5-03 - ESD and Fire & gas,PS5-03-06 - FZ-06 - Transformer Area,,PS5 - Milestone E,2,0,2,0,2,0.0,0,0,0
+PS5-03 - ESD and Fire & gas,PS5-03-07 - FZ-07 - Pretreatment Area,,PS5 - Milestone E,1,0,1,0,1,0.0,0,0,0
+PS5-03 - ESD and Fire & gas,PS5-03-08 - FZ-08 - Utilities - Power Generation Area - External,,PS5 - Milestone E,7,0,7,0,7,0.0,0,0,0
+PS5-03 - ESD and Fire & gas,PS5-03-09 - FZ-09 - Power Generation Building - Engine Bay 1,,PS5 - Milestone E,1,0,1,0,1,0.0,0,0,0
+PS5-03 - ESD and Fire & gas,PS5-03-10 - FZ-10 - Power Generation Building - Engine Bay 2,,PS5 - Milestone E,2,0,2,0,2,0.0,0,0,0
+PS5-03 - ESD and Fire & gas,PS5-03-11 - FZ-11 - Power Generation Building - Engine Bay 3,,PS5 - Milestone E,2,0,2,0,2,0.0,0,0,0
+PS5-03 - ESD and Fire & gas,PS5-03-12 - FZ-12 - Power Generation Building - Engine Bay 4,,PS5 - Milestone E,1,0,1,0,1,0.0,0,0,0
+PS5-03 - ESD and Fire & gas,PS5-03-14 - FZ-14 - Power Generation Building - Switchgear Room,YES / YES,PS5 - Milestone E,3,0,3,0,3,0.0,0,0,0
+PS5-04 - Surface Control & Supervision,PS5-04-02 - Office Building SIS/FGS System,,PS5 - Milestone E,8,0,8,0,8,0.0,0,0,0
+PS5-28 - Closed Drains / Open Drains,PS5-28-04 - Closed Drain Drum and Pump 02,,PS5 - Milestone E,7,0,7,6,1,0.0,0,0,0
+PS5-53 - Water Treatment,PS5-53-02 - Water Distribution Pump A/B,,PS5 - Milestone E,4,0,4,4,0,0.0,0,0,0
+PS5-60 - Main Power Generation,PS5-60-19 - Power Generation Package G,,PS5 - Milestone E,10,0,10,10,0,0.0,0,0,0
+PS5-60 - Main Power Generation,PS5-60-20 - Power Gen Package G (UCP),,PS5 - Milestone E,4,0,4,0,4,0.0,0,0,0
+PS5-60 - Main Power Generation,PS5-60-24 - Cooling Water Tank & Pump,,PS5 - Milestone E,2,0,2,2,0,0.0,0,0,0
+PS5-60 - Main Power Generation,PS5-60-25 - Cooling Water Maintenance Tank & Return Pump,,PS5 - Milestone E,2,0,2,2,0,0.0,0,0,0
+PS5-01 - Fire Fighting Generation / Distribution,PS5-01-05 - Foam Skid,,PS5 - Milestone F,5,0,5,2,3,0.0,0,0,0
+PS5-01 - Fire Fighting Generation / Distribution,PS5-01-08 - PS5 Deluge Valve Skid (PS5-01-UK-6100),,PS5 - Milestone F,3,0,3,0,3,0.0,0,0,0
+PS5-03 - ESD and Fire & gas,PS5-03-04 - FZ-04 - Utilities - Diesel and Firewater Pumps Areas,,PS5 - Milestone F,4,0,4,1,3,0.0,0,0,0
+PS5-08 - Telecom,PS5-08-52 - Process & Security CCTV,,PS5 - Milestone F,1,0,1,1,0,0.0,0,0,0
+PS5-53 - Water Treatment,PS5-53-04 - Water Treatment Purification Package,,PS5 - Milestone F,5,0,5,3,2,0.0,0,0,0
+"PS5-61 - Power distribution (HV, LV)",PS5-61-10 - Outdoor Valves Distribution Board - PS5-61-IG-0042,,PS5 - Milestone F,2,0,2,2,0,0.0,0,0,0
+"PS5-61 - Power distribution (HV, LV)",PS5-61-11 - Outdoor Valves Distribution Board - PS5-61-IG-0043,,PS5 - Milestone F,2,0,2,2,0,0.0,0,0,0
+PS5-71 - Fuel Oil / Diesel Oil,PS5-71-14 - Diesel Fuel Transfer and Dispensing Station,,PS5 - Milestone F,2,0,2,2,0,0.0,0,0,0
+PS5-71 - Fuel Oil / Diesel Oil,PS5-71-15 - Diesel Fuel Storage Tank,,PS5 - Milestone F,4,0,4,0,4,0.0,0,0,0
+PS5-71 - Fuel Oil / Diesel Oil,PS5-71-16 - Diesel Fuel Supply Pump A/B,,PS5 - Milestone F,4,0,4,4,0,0.0,0,0,0
+PS5-71 - Fuel Oil / Diesel Oil,PS5-71-17 - Diesel Fuel Distribution Header,,PS5 - Milestone F,1,0,1,0,1,0.0,0,0,0
+PS5-71 - Fuel Oil / Diesel Oil,PS5-71-19 - Diesel Separator Module (UCP),,PS5 - Milestone F,3,0,3,0,3,0.0,0,0,0
+PS5-74 - Inert Gas / Nitrogen gen. and dist.,PS5-74-01 - N2 Generation Skid,,PS5 - Milestone F,1,0,1,1,0,0.0,0,0,0
+PS5-74 - Inert Gas / Nitrogen gen. and dist.,PS5-74-02 - N2 Generation Skid (UCP),,PS5 - Milestone F,3,0,3,0,3,0.0,0,0,0
+PS5-28 - Closed Drains / Open Drains,PS5-28-03 - Closed Drain Drum and Pump 01,,PS5 - Milestone G,5,0,5,4,1,0.0,0,0,0
+PS5-28 - Closed Drains / Open Drains,PS5-28-06 - Relief Drum and Pump,,PS5 - Milestone G,3,0,3,2,1,0.0,0,0,0
+PS5-28 - Closed Drains / Open Drains,PS5-28-07 - Open Drains (OD2),,PS5 - Milestone G,2,0,2,0,2,0.0,0,0,0
+PS5-28 - Closed Drains / Open Drains,PS5-28-08 - Open Drain Sump and Pumps,,PS5 - Milestone G,8,0,8,8,0,0.0,0,0,0
+"PS5-61 - Power distribution (HV, LV)",PS5-61-02 - 6.6kV Switchboard and Transformer LLHT North - EITS Building (PS5-61-IJ-0010),,PS5 - Milestone G,17,1,16,16,0,5.9,0,0,0
+"PS5-61 - Power distribution (HV, LV)",PS5-61-03 - 6.6kV Switchboard and Transformer LLHT South - EITS Building (PS5-61-IJ-0011),,PS5 - Milestone G,17,0,17,17,0,0.0,0,0,0
+"PS5-61 - Power distribution (HV, LV)",PS5-61-09 - Outdoor Power Distribution Board - PS5-61-IG-0014,,PS5 - Milestone G,2,0,2,2,0,0.0,0,0,0
+PS5-62 - Lighting,PS5-62-02 - Lighting Control Panel - PS5-62-IE-0002,,PS5 - Milestone G,1,0,1,1,0,0.0,0,0,0
+PS5-62 - Lighting,PS5-62-03 - Outdoor Emergency Lighting DB  - PS5-05-IG-0004,,PS5 - Milestone G,2,0,2,2,0,0.0,0,0,0
+PS5-62 - Lighting,PS5-62-04 - Outdoor Emergency Lighting DB  - PS5-05-IG-0006,,PS5 - Milestone G,2,0,2,2,0,0.0,0,0,0
+PS5-62 - Lighting,PS5-62-08 - Outdoor Normal Lighting  DB  - PS5-61-IG-0006,,PS5 - Milestone G,2,0,2,2,0,0.0,0,0,0
+PS5-62 - Lighting,PS5-62-09 - Outdoor Normal Lighting DB  - PS5-61-IG-0007,,PS5 - Milestone G,2,0,2,2,0,0.0,0,0,0
+PS5-75 - Chemical storage & injection,PS5-75-01 - DRA Injection Package,,PS5 - Milestone G,6,0,6,2,4,0.0,0,0,0
+PS5-75 - Chemical storage & injection,PS5-75-02 - Biocide Injection Package,,PS5 - Milestone G,6,0,6,4,2,0.0,0,0,0
+PS5-75 - Chemical storage & injection,PS5-75-03 - Corrosion Inhibitor Injection Package,,PS5 - Milestone G,6,0,6,4,2,0.0,0,0,0
+PS5-03 - ESD and Fire & gas,PS5-03-01 - FZ-01 - Process Area,,PS5 - Milestone H,15,0,15,8,7,0.0,0,0,0
+PS5-03 - ESD and Fire & gas,PS5-03-03 - FZ-03 - Buildings Area,,PS5 - Milestone H,2,0,2,0,2,0.0,0,0,0
+PS5-25 - Export / Off Loading,PS5-25-01 - Export Pipeline Pig Receiver,,PS5 - Milestone H,3,0,3,1,2,0.0,0,0,0
+PS5-25 - Export / Off Loading,PS5-25-02 - Crude Oil Export Pump A,,PS5 - Milestone H,53,0,53,40,13,0.0,0,0,0
+PS5-25 - Export / Off Loading,PS5-25-03 - Crude Oil Export Pump B,,PS5 - Milestone H,52,0,52,39,13,0.0,0,0,0
+PS5-25 - Export / Off Loading,PS5-25-04 - Crude Oil Export Pump C,,PS5 - Milestone H,52,0,52,39,13,0.0,0,0,0
+PS5-25 - Export / Off Loading,PS5-25-06 - Crude Oil Export Pumps Discharge,,PS5 - Milestone H,1,0,1,1,0,0.0,0,0,0
+PS5-25 - Export / Off Loading,PS5-25-07 - Export Pipeline Pig Launcher,,PS5 - Milestone H,10,0,10,0,10,0.0,0,0,0
+PS5-28 - Closed Drains / Open Drains,PS5-28-13 - Seal Oil Drain Drum & Pump A,,PS5 - Milestone H,2,0,2,2,0,0.0,0,0,0
+PS5-28 - Closed Drains / Open Drains,PS5-28-14 - Seal Oil Drain Drum & Pump B,,PS5 - Milestone H,2,0,2,2,0,0.0,0,0,0
+PS5-28 - Closed Drains / Open Drains,PS5-28-15 - Seal Oil Drain Drum & Pump C,,PS5 - Milestone H,2,0,2,2,0,0.0,0,0,0
+PS5-28 - Closed Drains / Open Drains,PS5-28-17 - Reinjection Pump,,PS5 - Milestone H,7,0,7,6,1,0.0,0,0,0
+PS5-71 - Fuel Oil / Diesel Oil,PS5-71-01 - CFO Storage Tank Feed Heater,,PS5 - Milestone H,12,0,12,10,2,0.0,0,0,0
+PS5-71 - Fuel Oil / Diesel Oil,PS5-71-02 - CFO Allocation Metering Package,,PS5 - Milestone H,3,0,3,0,3,0.0,0,0,0
+PS5-71 - Fuel Oil / Diesel Oil,PS5-71-04 - CFO Storage Tank,,PS5 - Milestone H,2,0,2,2,0,0.0,0,0,0
+PS5-71 - Fuel Oil / Diesel Oil,PS5-71-05 - CFO Transfer Pump A/B,,PS5 - Milestone H,4,0,4,4,0,0.0,0,0,0
+PS5-71 - Fuel Oil / Diesel Oil,PS5-71-07 - Crude Fuel Separation Module (UCP),,PS5 - Milestone H,6,0,6,0,6,0.0,0,0,0
+PS5-71 - Fuel Oil / Diesel Oil,PS5-71-09 - CFO Pre-Pressure Modules (UCP),YES / NO,PS5 - Milestone H,3,0,3,0,3,0.0,0,0,0
+PS5-71 - Fuel Oil / Diesel Oil,PS5-71-12 - CFO Service Tank,,PS5 - Milestone H,2,0,2,2,0,0.0,0,0,0
+PS5-71 - Fuel Oil / Diesel Oil,PS5-71-13 - CFO Service Pump A/B,,PS5 - Milestone H,4,0,4,4,0,0.0,0,0,0
+PS5-79 - Insulation/trace Heating,PS5-79-01 - Electrical Heat Tracing Transformer/Distribution Board 1 (PS5-79-IG-0001),,PS5 - Milestone H,2,0,2,1,1,0.0,0,0,0
+PS5-79 - Insulation/trace Heating,PS5-79-02 - Electrical Heat Tracing Transformer/Distribution Board 2 (PS5-79-IG-0002),,PS5 - Milestone H,2,0,2,1,1,0.0,0,0,0
+PS5-79 - Insulation/trace Heating,PS5-79-03 - Electrical Heat Tracing Transformer/Distribution Board 3 (PS5-79-IG-0003),,PS5 - Milestone H,2,0,2,1,1,0.0,0,0,0
+PS5-79 - Insulation/trace Heating,PS5-79-04 - Electrical Heat Tracing Transformer/Distribution Board 4 (PS5-79-IG-0004),,PS5 - Milestone H,2,0,2,1,1,0.0,0,0,0
+PS5-79 - Insulation/trace Heating,PS5-79-05 - Electrical Heat Tracing Transformer/Distribution Board 5 (PS5-79-IG-0005),,PS5 - Milestone H,2,0,2,1,1,0.0,0,0,0
+PS5-79 - Insulation/trace Heating,PS5-79-06 - Electrical Heat Tracing Transformer/Distribution Board 6 (PS5-79-IG-0006),,PS5 - Milestone H,2,0,2,1,1,0.0,0,0,0
+PS5-79 - Insulation/trace Heating,PS5-79-07 - Electrical Heat Tracing Transformer/Distribution Board 7 (PS5-79-IG-0007),,PS5 - Milestone H,2,0,2,1,1,0.0,0,0,0
+PS5-79 - Insulation/trace Heating,PS5-79-08 - Electrical Heat Tracing Transformer/Distribution Board 8 (PS5-79-IG-0008),,PS5 - Milestone H,2,0,2,1,1,0.0,0,0,0
+PS5-79 - Insulation/trace Heating,PS5-79-09 - Electrical Heat Tracing Transformer/Distribution Board 9 (PS5-79-IG-0009),,PS5 - Milestone H,2,0,2,1,1,0.0,0,0,0
+PS5-79 - Insulation/trace Heating,PS5-79-10 - Electrical Heat Tracing Transformer/Distribution Board 10 (PS5-79-IG-0010),,PS5 - Milestone H,2,0,2,1,1,0.0,0,0,0
+PS5-79 - Insulation/trace Heating,PS5-79-11 - Electrical Heat Tracing Transformer/Distribution Board 11 (PS5-79-IG-0011),,PS5 - Milestone H,2,0,2,1,1,0.0,0,0,0
+PS5-79 - Insulation/trace Heating,PS5-79-12 - Electrical Heat Tracing Transformer/Distribution Board 12 (PS5-79-IG-0012),,PS5 - Milestone H,2,0,2,1,1,0.0,0,0,0
+PS5-03 - ESD and Fire & gas,PS5-03-22 - FZ-G1 - Guard House,,PS5 - Milestone I,2,0,2,0,2,0.0,0,0,0
+PS5-03 - ESD and Fire & gas,PS5-03-24 - FZ - Office and Facilities Building,,PS5 - Milestone I,2,0,2,0,2,0.0,0,0,0
+PS5-03 - ESD and Fire & gas,PS5-03-25 - FZ - Workshop & Warehouse,,PS5 - Milestone I,2,0,2,0,2,0.0,0,0,0
+PS5-09 - HVAC,PS5-09-01 - HVAC for Office and Facilities building,,PS5 - Milestone I,7,0,7,0,7,0.0,0,0,0
+PS5-09 - HVAC,PS5-09-04 - HVAC for Workshop & Warehouse,,PS5 - Milestone I,5,0,5,0,5,0.0,0,0,0
+PS5-28 - Closed Drains / Open Drains,PS5-28-10 - Oil Skimmer Package,,PS5 - Milestone I,2,0,2,2,0,0.0,0,0,0
+PS5-28 - Closed Drains / Open Drains,PS5-28-11 - Open Drain Interceptor,,PS5 - Milestone I,2,0,2,0,2,0.0,0,0,0
+PS5-50 - Water Lifting,PS5-50-01 - Water Well Submersible Pumps (3100),,PS5 - Milestone I,5,0,5,1,4,0.0,0,0,0
+PS5-50 - Water Lifting,PS5-50-02 - Water Well Submersible Pumps (3200),,PS5 - Milestone I,5,0,5,1,4,0.0,0,0,0
+"PS5-61 - Power distribution (HV, LV)",PS5-61-04 - 0.4kV Switchboard Office & Facilities Building (PS5-61-IK-0005),,PS5 - Milestone I,10,0,10,10,0,0.0,0,0,0
+PS5-82 - Liv.Quarter/Catering/Sewage/Offices,PS5-82-02 - Sewage Treatment Plant Package,,PS5 - Milestone I,1,0,1,1,0,0.0,0,0,0
