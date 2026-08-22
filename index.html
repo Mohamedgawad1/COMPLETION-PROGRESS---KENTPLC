@@ -191,7 +191,7 @@ function renderRfc(){
  let d=RFC.filter(x=>!q||x.name.toLowerCase().includes(q)||x.sid.toLowerCase().includes(q));
  let hh='<tr><th>SUB SYSTEM</th><th>PRIORITY</th><th>RFC DATE (B,H,M,P,S)</th><th>RFC DATES EIT</th><th>BASELINE FORCAST</th><th>RECOVERY/REVISED</th><th>RFC SIGNED</th><th>MILESTONE</th><th>TOTAL %</th>';
  for(const dd of RFK)hh+='<th title="'+dd+'">'+dd+'</th>';
- hh+='<th>ITRs</th><th>CLOSED</th><th>BALANCE</th><th>ITR %</th><th>CPP-1</th><th>EIT</th><th>EACOP</th><th>REMARK EACOP</th><th>REMARK CPP-EIT</th><th>REMARK CPP-1</th><th>WALKDOWN STATUS</th><th style="width:26px">&#9873;</th><th style="min-width:170px">MY REMARKS</th></tr>';
+ hh+='<th>ITRs</th><th>CLOSED</th><th>BALANCE</th><th>ITR %</th><th>CPP-1</th><th>EIT</th><th>EACOP</th><th>EACOP</th><th>CPP-EIT</th><th>CPP-1</th><th>WALKDOWN STATUS</th><th style="width:26px">&#9873;</th><th style="min-width:170px">MY REMARKS</th></tr>';
  let rows='';
  for(const x of d){
   rows+='<tr data-id="'+esc(x.sid)+'" data-sh="'+SH+'">';
@@ -227,7 +227,7 @@ function renderBlk(){
  let d=RFC.filter(x=>!q||x.name.toLowerCase().includes(q)||x.sid.toLowerCase().includes(q));
  d=d.slice().sort((a,b)=>(b.b1+b.b2+b.b3)-(a.b1+a.b2+a.b3));
  const N=NOTES[SH]||{},C=PCOL[SH]||{};
- let h='<tr><th>SUB SYSTEM</th><th>PRIO</th><th>TOTAL %</th><th>CPP-1</th><th>EIT</th><th>EACOP</th><th>REMARK EACOP</th><th>REMARK CPP-EIT</th><th>REMARK CPP-1</th><th>WALKDOWN</th><th>&#9873;</th><th style="min-width:170px">MY REMARKS</th></tr>';
+ let h='<tr><th>SUB SYSTEM</th><th>PRIO</th><th>TOTAL %</th><th>CPP-1</th><th>EIT</th><th>EACOP</th><th>EACOP</th><th>CPP-EIT</th><th>CPP-1</th><th>WALKDOWN</th><th>&#9873;</th><th style="min-width:170px">MY REMARKS</th></tr>';
  let rows='';
  for(const x of d){
   const col=C[x.sid]||'';const bg=col?'style="background:'+HEX[col]+'"':'';
