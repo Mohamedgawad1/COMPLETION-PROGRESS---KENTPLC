@@ -73,6 +73,34 @@ tbody tr:hover td{background:#fff5e3}
 .hero h2{font-size:16px;color:#fff;border:none;padding:0;margin:0 0 7px;letter-spacing:.5px}
 .hero #sub-kpis{font-size:11.5px;color:#cfe0f2;letter-spacing:.3px}
 .hero #sub-kpis b{color:var(--gold)}
+.kpi .bar{height:7px;border-radius:999px;background:rgba(255,255,255,.25);overflow:hidden;margin-top:6px}
+.kpi .bar i{display:block;height:100%;background:#fff;border-radius:999px}
+.kpi .duo{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.6px;opacity:.95;margin-top:4px;text-transform:uppercase}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:10px;margin-top:12px}
+.stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 12px}
+.stat h4{font-size:9.5px;letter-spacing:1.1px;text-transform:uppercase;color:#9fc3e8;margin-bottom:6px}
+.stat .v{font-size:21px;font-weight:800;line-height:1}
+.stat .v small{font-size:10.5px;color:#cfe0f2;font-weight:600}
+.bar2{height:7px;border-radius:999px;background:rgba(0,0,0,.35);overflow:hidden;margin-top:7px}
+.bar2 i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#57a05b,#8bd48d);transition:width .6s ease}
+.bar2.open i{background:linear-gradient(90deg,#ed7d31,#ffb066)}
+.segbar{display:flex;height:8px;border-radius:999px;overflow:hidden;background:rgba(0,0,0,.35);margin-top:7px}
+.segbar i{display:block;height:100%;transition:width .6s ease}
+.stat .v .sep{margin:0 9px;opacity:.35;font-weight:400}
+.duo2{display:flex;justify-content:space-between;font-size:10px;color:#cfe0f2;margin-top:6px;letter-spacing:.6px;text-transform:uppercase}
+.duo2 b{color:#fff}
+@keyframes fadeUp{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+.view.on{animation:fadeUp .28s ease}
+.sidchip{display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,214,150,.5);color:#ffd9a0;border-radius:6px;padding:2px 9px;font-size:11.5px;font-weight:800;letter-spacing:1.2px;margin-right:8px;vertical-align:2px}
+.panel{position:relative;opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease}
+.panel.in{opacity:1;transform:none}
+.panel::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(135deg,rgba(255,255,255,.85),rgba(226,232,240,.25) 45%,rgba(237,125,49,.30));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;opacity:.75}
+header::after{content:'';position:absolute;top:0;left:-60%;width:38%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.07),transparent);animation:sheen 9s ease-in-out infinite;pointer-events:none}
+@keyframes sheen{0%,55%{left:-60%}95%,100%{left:135%}}
+nav .seg button.on{box-shadow:0 0 0 3px rgba(237,125,49,.16),var(--sh)}
+button:active,.chip:active{transform:scale(.97)}
+body{background-image:radial-gradient(900px 420px at 88% -10%,rgba(237,125,49,.08),transparent 60%),radial-gradient(900px 460px at -10% 112%,rgba(46,91,148,.12),transparent 60%)}
+@media print{.panel{opacity:1!important;transform:none!important}}
 footer{padding:14px 20px 24px;color:#8b99a9;font-size:10.5px;text-align:center}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-thumb{background:#c2cfdd;border-radius:999px;border:2px solid #f3f5f9}
@@ -95,7 +123,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 </div>
 
 <section class="view on" id="v-dash">
- <div class="kpis"><div class="kpi k-navy"><b>10300.0</b><span>ITR TOTAL</span></div><div class="kpi k-green"><b>3031.0</b><span>ITR CLOSED</span></div><div class="kpi k-teal"><b>29%</b><span>ITR %</span></div><div class="kpi k-blue"><b>1171</b><span>PUNCH TOTAL</span></div><div class="kpi k-green"><b>1779</b><span>PUNCH CLOSED</span></div><div class="kpi k-orange"><b>0</b><span>PUNCH OPEN</span></div><div class="kpi k-navy"><b>292</b><span>MILESTONES</span></div><div class="kpi k-green"><b>9</b><span>100% COMPLETE</span></div></div>
+ <div class="kpis"><div class="kpi k-navy"><b>10,300.0</b><span>ITR TOTAL</span></div><div class="kpi k-green"><b>3,031.0</b><span>ITR CLOSED</span></div><div class="kpi k-teal"><b>29%</b><span>ITR %</span></div><div class="kpi k-blue"><b>1,171</b><span>PUNCH TOTAL</span></div><div class="kpi k-green"><b>1,779</b><span>PUNCH CLOSED</span></div><div class="kpi k-orange"><b>0</b><span>PUNCH OPEN</span></div><div class="kpi k-navy"><b>292</b><span>MILESTONES</span></div><div class="kpi k-green"><b>9</b><span>100% COMPLETE</span></div></div>
  <div class="two">
   <div class="panel"><h2>ITR Progress by Discipline</h2><div class="tblwrap"><table id="t-itrt"></table></div></div>
   <div class="panel"><h2>Punch Summary (A / B / C)</h2><div class="tblwrap"><table id="t-punt"></table></div></div>
@@ -245,12 +273,20 @@ function subRows(src,isP){
 }
 function renderSub(){
  const x=RFC.find(r=>r.sid===SUBCUR)||{name:SUBCUR};
- $('sub-name').textContent=x.name||'SELECT A SUBSYSTEM';
+ $('sub-name').innerHTML='<span class="sidchip">'+esc(SUBCUR||'-')+'</span>'+esc(x.name||'SELECT A SUBSYSTEM');
  const P=PUNCH.filter(r=>r[9]===SUBCUR);
  const I=ITR.filter(r=>r[9]===SUBCUR);
  const pc=P.filter(r=>r[5]==='Closed').length;
  const ic=I.filter(r=>doneI(r[5])).length;
- $('sub-kpis').innerHTML='TOTAL %: <b>'+(x.tot===''?'-':x.tot+'%')+'</b> &nbsp;|&nbsp; PUNCH: <b>'+pc+'/'+P.length+'</b> closed &nbsp;|&nbsp; ITR: <b>'+ic+'/'+I.length+'</b> done &nbsp;|&nbsp; RFC SIGNED: <b>'+esc(x.signed||'-')+'</b>';
+ const pp=P.length?Math.round(pc/P.length*100):0;
+ const ip=I.length?Math.round(ic/I.length*100):0;
+ function st(lab,cp,op,c,o,n){
+  return '<div class="stat"><h4>'+lab+'</h4><div class="v">'+cp+'% <small>CLOSED</small><span class="sep">|</span>'+op+'% <small>OPEN</small></div><div class="segbar"><i style="width:'+cp+'%;background:linear-gradient(90deg,#57a05b,#8bd48d)"></i><i style="width:'+op+'%;background:linear-gradient(90deg,#ed7d31,#ffb066)"></i></div><div class="duo2"><span><b>'+c.toLocaleString('en-US')+'</b> CLOSED</span><span><b>'+o.toLocaleString('en-US')+'</b> OPEN · '+n.toLocaleString('en-US')+' TOT</span></div></div>';
+ }
+ $('sub-kpis').innerHTML='<div class="statgrid" style="grid-template-columns:repeat(auto-fit,minmax(250px,1fr))">'
+  +st('PUNCH',pp,100-pp,pc,P.length-pc,P.length)
+  +st('ITR',ip,100-ip,ic,I.length-ic,I.length)
+  +'</div><div style="margin-top:10px">TOTAL %: <b>'+(x.tot===''?'-':x.tot+'%')+'</b> &nbsp;|&nbsp; RFC SIGNED: <b>'+esc(x.signed||'-')+'</b></div>';
  const ph='<tr><th>ID</th><th>TAG</th><th>CAT</th><th>DISC</th><th>DESCRIPTION</th><th>STATUS</th><th>CLOSE</th><th style="width:26px">&#9873;</th><th style="min-width:150px">NOTES</th></tr>';
  const ih='<tr><th>ID</th><th>TAG</th><th>DISC</th><th>DESCRIPTION</th><th>STATE</th><th>CLOSE</th><th style="width:26px">&#9873;</th><th style="min-width:150px">NOTES</th></tr>';
  $('t-sp').innerHTML='<thead>'+ph+'</thead><tbody>'+(subRows(P,true)||'<tr><td colspan="9"><div class="empty">No punch items</div></td></tr>')+'</tbody>';
@@ -385,6 +421,27 @@ function renderDone(){
  $('h-done').textContent=d.length+' of '+RFC.length+' subsystems at 100%';
 }
 const RENDER={dash:null,rfc:renderRfc,blk:renderBlk,pu:()=>renderList('pu'),it:()=>renderList('it'),sub:renderSub,done:renderDone};
+function countUp(){
+ document.querySelectorAll('#v-dash .kpi b').forEach(el=>{
+  const t=el.textContent;
+  if(!/^[0-9,]+$/.test(t))return;
+  const n=parseInt(t.replace(/,/g,''),10);
+  if(isNaN(n))return;
+  const st=performance.now();
+  function f(now){
+   let p=Math.min(1,(now-st)/700);
+   p=1-Math.pow(1-p,3);
+   el.textContent=Math.round(n*p).toLocaleString('en-US');
+   if(p<1)requestAnimationFrame(f);else el.textContent=t;
+  }
+  requestAnimationFrame(f);
+ });
+}
+const REV_IO=('IntersectionObserver' in window)?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');REV_IO.unobserve(e.target)}})},{threshold:.05}):null;
+function initReveal(){
+ if(!REV_IO){document.querySelectorAll('.panel').forEach(function(p){p.classList.add('in')});return}
+ document.querySelectorAll('.panel:not(.in)').forEach(function(p){REV_IO.observe(p)});
+}
 function show(v){
  V=v;
  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));
@@ -439,4 +496,5 @@ function applyHash(){
 window.addEventListener('hashchange',applyHash);
 renderDash();
 applyHash()||show('dash');
+initReveal();try{countUp()}catch(e){}
 </script></body></html>
