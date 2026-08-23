@@ -17,7 +17,8 @@ header{background:linear-gradient(135deg,#071a30,#0d2f52 55%,#123f6b);color:#fff
 header::after{content:'';position:absolute;left:0;right:0;bottom:-3px;height:3px;background:linear-gradient(90deg,var(--acc),var(--gold) 40%,transparent 90%)}
 .logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--acc),var(--gold));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:#081c30;box-shadow:0 0 0 3px rgba(255,192,0,.15)}
 header h1{font-size:16.5px;font-weight:800;letter-spacing:1.6px}
-header h1 span{background:linear-gradient(90deg,#ffd27a,#ffb055);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+header h1 span{color:#ffd27a;display:inline-block;background:linear-gradient(90deg,#ffd27a,#ffb055);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+header .logo svg{display:block}
 header .meta{font-family:'IBM Plex Mono',Consolas,monospace;font-size:10px;color:#9db8d2;margin-top:2px;letter-spacing:.5px}
 header .logo{width:46px;height:46px;border-radius:13px;background:linear-gradient(145deg,#16406e,#0b2239);display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px rgba(255,192,0,.4),0 8px 20px -6px rgba(0,0,0,.55)}
 #syncbadge{margin-left:auto;font-size:10px;padding:4px 12px;border-radius:999px;background:#1f9d55;font-weight:700;white-space:nowrap;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
@@ -97,7 +98,8 @@ tbody tr:hover td{background:#fff5e3}
 @keyframes fadeUp{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
 .view.on{animation:fadeUp .28s ease}
 .sidchip{display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,214,150,.5);color:#ffd9a0;border-radius:6px;padding:2px 9px;font-size:11.5px;font-weight:800;letter-spacing:1.2px;margin-right:8px;vertical-align:2px}
-.panel{position:relative;opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease}
+.panel{position:relative;transition:opacity .5s ease,transform .5s ease}
+.panel.pre{opacity:0;transform:translateY(14px)}
 .panel.in{opacity:1;transform:none}
 .panel::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(135deg,rgba(255,255,255,.85),rgba(226,232,240,.25) 45%,rgba(237,125,49,.30));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;opacity:.75}
 header::after{content:'';position:absolute;top:0;left:-60%;width:38%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.07),transparent);animation:sheen 9s ease-in-out infinite;pointer-events:none}
@@ -448,10 +450,14 @@ function countUp(){
   requestAnimationFrame(f);
  });
 }
-const REV_IO=('IntersectionObserver' in window)?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');REV_IO.unobserve(e.target)}})},{threshold:.05}):null;
+const REV_IO=('IntersectionObserver' in window)?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.remove('pre');e.target.classList.add('in');REV_IO.unobserve(e.target)}})},{threshold:.05}):null;
 function initReveal(){
  if(!REV_IO){document.querySelectorAll('.panel').forEach(function(p){p.classList.add('in')});return}
- document.querySelectorAll('.panel:not(.in)').forEach(function(p){REV_IO.observe(p)});
+ document.querySelectorAll('.panel:not(.in)').forEach(function(p){
+  if(p.classList.contains('pre'))return;
+  p.classList.add('pre');
+  requestAnimationFrame(function(){requestAnimationFrame(function(){REV_IO.observe(p)})});
+ });
 }
 function show(v){
  V=v;
@@ -506,6 +512,7 @@ function applyHash(){
 }
 window.addEventListener('hashchange',applyHash);
 renderDash();
-applyHash()||show('dash');
-initReveal();try{countUp()}catch(e){}
+try{applyHash()||show('dash')}catch(e){show('dash')}
+try{initReveal()}catch(e){document.querySelectorAll('.panel').forEach(function(p){p.classList.add('in')})}
+try{countUp()}catch(e){}
 </script></body></html>
