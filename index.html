@@ -113,7 +113,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 <section class="view" id="v-blk">
  <div class="panel">
   <h2 style="border-color:#c00000">Blocking Points &amp; Remarks &mdash; CPP-1 / EIT / EACOP</h2>
-  <div class="tools"><input type="search" id="q-blk" placeholder="Search subsystem..."></div>
+   <div class="tools"><input type="search" id="q-blk" placeholder="Search subsystem..."><span class="chip" id="blk-all" style="display:none">&#8630; ALL SYSTEMS</span></div>
   <div class="tblwrap"><table id="t-blk"></table></div><div class="hint" id="h-blk"></div>
  </div>
 </section>
@@ -295,10 +295,11 @@ function renderRfc(){
 }
 function emptyRow(){return '<tr><td colspan="20"><div class="empty">No matching records</div></td></tr>';}
 function renderBlk(){
- const SH='RFC PROGRESS';
- const q=$('q-blk').value.trim().toLowerCase();
- let d=RFC.filter(x=>!q||x.name.toLowerCase().includes(q)||x.sid.toLowerCase().includes(q));
- d=d.slice().sort((a,b)=>(b.b1+b.b2+b.b3)-(a.b1+a.b2+a.b3));
+  const SH='RFC PROGRESS';
+  const q=$('q-blk').value.trim().toLowerCase();
+  let d=RFC.filter(x=>!q||x.name.toLowerCase().includes(q)||x.sid.toLowerCase().includes(q));
+  if(SUBCUR)d=d.filter(x=>x.sid===SUBCUR);
+  d=d.slice().sort((a,b)=>(b.b1+b.b2+b.b3)-(a.b1+a.b2+a.b3));
  const N=NOTES[SH]||{},C=PCOL[SH]||{};
  let h='<tr><th>SUB SYSTEM</th><th>PRIO</th><th>TOTAL %</th><th>CPP-1</th><th>EIT</th><th>EACOP</th><th>EACOP</th><th>CPP-EIT</th><th>CPP-1</th><th>WALKDOWN</th><th>&#9873;</th><th style="min-width:170px">MY REMARKS</th></tr>';
  let rows='';
@@ -308,16 +309,17 @@ function renderBlk(){
   rows+='<td '+bg+' class="sublink" data-go="'+esc(x.sid)+'" style="white-space:normal;min-width:240px">'+esc(x.name)+'</td>';
   rows+='<td '+bg+' style="text-align:center">'+esc(x.prio)+'</td><td '+bg+' style="text-align:center">'+(x.tot===''?'-':x.tot+'%')+'</td>';
   rows+=edt(SH,x.sid,'CPP-1',x.b1||'','style="text-align:center"',x.b1>0?'blk':'')+edt(SH,x.sid,'EIT',x.b2||'','style="text-align:center"',x.b2>0?'blk':'')+edt(SH,x.sid,'EACOP',x.b3||'','style="text-align:center"',x.b3>0?'blk':'');
-  rows+=edt(SH,x.sid,'REMARK EACOP',x.re1,'style="min-width:130px;background:#fff8e1"');
-  rows+=edt(SH,x.sid,'REMARK CPP-EIT',x.re2,'style="min-width:130px;background:#fff8e1"');
-  rows+=edt(SH,x.sid,'REMARK CPP-1',x.re3,'style="min-width:130px;background:#fff8e1"');
+   rows+=edt(SH,x.sid,'REMARK EACOP',x.re1,'style="background:#fff8e1"','remcell');
+   rows+=edt(SH,x.sid,'REMARK CPP-EIT',x.re2,'style="background:#fff8e1"','remcell');
+   rows+=edt(SH,x.sid,'REMARK CPP-1',x.re3,'style="background:#fff8e1"','remcell');
   const wst=col?'style="background:'+HEX[col]+';text-align:center"':'style="text-align:center"';
   rows+=edt(SH,x.sid,'STATUS',ovv(SH,x.sid,'STATUS',x.wd),wst);
   rows+='<td '+(col?'style="background:'+HEX[col]+'"':'')+'><button class="cb" style="border-color:'+(col?HEX[col]:'#cbd5e0')+';background:'+(col?HEX[col]:'#fff')+'"></button></td>';
   rows+='<td><input class="ni" style="width:200px" placeholder="+ remark..." value="'+esc(N[x.sid]||'')+'"></td></tr>';
  }
- $('t-blk').innerHTML='<thead>'+h+'</thead><tbody>'+(rows||emptyRow())+'</tbody>';
- $('h-blk').textContent=d.length+' subsystem(s) - sorted by blocking count. Every cell editable &amp; synced.';
+  $('t-blk').innerHTML='<thead>'+h+'</thead><tbody>'+(rows||emptyRow())+'</tbody>';
+  $('blk-all').style.display=SUBCUR?'':'none';
+  $('h-blk').textContent=d.length+' subsystem(s)'+(SUBCUR?' | SHOWING ONLY: '+SUBCUR:'')+' - sorted by blocking count. Every cell editable.';
 }
 function renderList(w){
  const isP=(w==='pu');
@@ -394,6 +396,7 @@ document.querySelectorAll('.step').forEach(b=>b.onclick=()=>show(b.dataset.v));
 [['q-rfc',renderRfc],['q-blk',renderBlk],['q-pu',()=>renderList('pu')],['q-it',()=>renderList('it')]].forEach(([id,fn])=>$(id).addEventListener('input',fn));
 $('s-pu').addEventListener('change',()=>renderList('pu'));
 $('s-it').addEventListener('change',()=>renderList('it'));
+$('blk-all').onclick=()=>{SUBCUR='';$('s-pu').value='';$('s-it').value='';renderBlk();};
 document.querySelectorAll('.chip[data-cat]').forEach(ch=>ch.onclick=()=>{
  document.querySelectorAll('.chip[data-cat]').forEach(c=>c.classList.remove('on'));
  ch.classList.add('on');F.cat=ch.dataset.cat;renderList('pu');});
