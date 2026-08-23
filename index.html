@@ -21,7 +21,8 @@ header h1 span{color:#ffd27a;display:inline-block;background:linear-gradient(90d
 header .logo svg{display:block}
 header .meta{font-family:'IBM Plex Mono',Consolas,monospace;font-size:10px;color:#9db8d2;margin-top:2px;letter-spacing:.5px}
 header .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(145deg,#16406e,#0b2239);display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px rgba(255,192,0,.4),0 8px 20px -6px rgba(0,0,0,.55)}
-#syncbadge{margin-left:auto;font-size:10px;padding:4px 12px;border-radius:999px;background:#1f9d55;font-weight:700;white-space:nowrap;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
+#syncbadge{margin-left:10px;font-size:10px;padding:4px 12px;border-radius:999px;background:#1f9d55;font-weight:700;white-space:nowrap;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
+#clock{margin-left:auto;font-family:'IBM Plex Mono',Consolas,monospace;font-size:11px;font-weight:600;color:#ffd27a;letter-spacing:.8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,210,122,.35);padding:6px 12px;border-radius:8px;white-space:nowrap}
 #syncbadge.off{background:#c2610c}
 .flow{display:flex;flex-wrap:wrap;gap:3px;background:rgba(255,255,255,.94);backdrop-filter:blur(6px) saturate(1.15);padding:4px 16px;border-bottom:1px solid var(--line);position:sticky;top:50px;z-index:60}
 .step{border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:10.5px;color:#44566c;background:transparent;padding:6px 14px;border-radius:999px;transition:.15s;letter-spacing:.5px;text-transform:uppercase}
@@ -520,6 +521,25 @@ function applyHash(){
 }
 window.addEventListener('hashchange',applyHash);
 renderDash();
+function renderMs(){
+ const q=($('q-ms').value||'').trim().toLowerCase();
+ const d=MILES.filter(x=>!q||[x.sub,x.desc,x.milestone,x.month,x.mantrac,x.priority,x.pg,x.rfsu,x.mp_date,x.eit_date].some(v=>String(v??'').toLowerCase().includes(q)));
+ let hh='<tr><th>SUB</th><th>DESCRIPTION</th><th>MILESTONE</th><th>MONTH</th><th>MANTRAC</th><th>PRIORITY</th><th>PG</th><th>RFSU</th><th>MP DATE</th><th>EIT DATE</th></tr>';
+ let rows='';
+ for(const x of d){
+  rows+='<tr><td>'+esc(x.sub)+'</td><td style="white-space:normal;min-width:220px">'+esc(x.desc)+'</td><td>'+esc(x.milestone)+'</td><td>'+esc(x.month)+'</td><td>'+esc(x.mantrac)+'</td><td>'+esc(x.priority)+'</td><td>'+esc(x.pg)+'</td><td>'+esc(x.rfsu)+'</td><td>'+esc(x.mp_date)+'</td><td>'+esc(x.eit_date)+'</td></tr>';
+ }
+ $('t-ms').innerHTML='<thead>'+hh+'</thead><tbody>'+(rows||'<tr><td colspan="10"><div class="empty">No milestones</div></td></tr>')+'</tbody>';
+ $('h-ms').textContent=d.length+' / '+MILES.length+' ROWS';
+}
+function tick(){
+ const d=new Date(),p=n=>String(n).padStart(2,'0');
+ const days=['SUN','MON','TUE','WED','THU','FRI','SAT'],mo=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+ $('clock').textContent=days[d.getDay()]+' '+p(d.getDate())+' '+mo[d.getMonth()]+' '+d.getFullYear()+' – '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+}
+try{renderMs()}catch(e){}
+$('q-ms').addEventListener('input',renderMs);
+try{tick()}catch(e){}setInterval(tick,1000);
 try{applyHash()||show('dash')}catch(e){show('dash')}
 try{initReveal()}catch(e){document.querySelectorAll('.panel').forEach(function(p){p.classList.add('in')})}
 try{countUp()}catch(e){}
