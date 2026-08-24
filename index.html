@@ -49,8 +49,8 @@ th.act .fbtn{background:var(--acc);border-color:#fff}
 #lmodal.on{display:flex}
 #lmbox{background:#fff;border-radius:16px;padding:22px 24px;width:min(92vw,340px);box-shadow:0 30px 80px -20px rgba(0,0,0,.55);text-align:center}
 #lmbox h3{font-size:14px;color:#0b2239;margin-bottom:12px;letter-spacing:1px}
-#lmbox input{width:100%;padding:9px 12px;font-size:13px;border:1.5px solid #ccd6e4;border-radius:9px;margin-bottom:9px;text-align:center;outline:none;font-family:inherit}
-#lmbox input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(237,125,49,.15)}
+#lmbox input,#lmbox select{width:100%;padding:9px 12px;font-size:13px;border:1.5px solid #ccd6e4;border-radius:9px;margin-bottom:9px;text-align:center;outline:none;font-family:inherit;background:#fff}
+#lmbox input:focus,#lmbox select:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(237,125,49,.15)}
 .lmrow{display:flex;gap:8px;margin-top:4px}
 .lmrow button{flex:1;cursor:pointer;font-family:inherit;font-weight:800;font-size:11px;letter-spacing:.8px;border:none;border-radius:9px;padding:9px 0}
 #lok{background:linear-gradient(135deg,#0b2239,#155a9e);color:#fff}
@@ -185,7 +185,12 @@ header,#wrap,.flow,footer{position:relative;z-index:1}
 </header>
 <div id="lmodal"><div id="lmbox">
  <h3>&#128274; EDITOR LOGIN</h3>
- <input id="lu" placeholder="USER NAME" autocomplete="off">
+ <select id="lu">
+  <option value="">-- SELECT NAME --</option>
+  <option>MOHAMED ABDELGAWAD</option>
+  <option>JABESTEEN</option>
+  <option>ZEESHAN ANWAR</option>
+ </select>
  <input id="lp" type="password" placeholder="PASSWORD">
  <div class="lmrow"><button id="lok">LOGIN</button><button id="lcx">CANCEL</button></div>
  <div class="lmsg" id="lmsg">Authorized engineers only &mdash; 3 accounts.</div>
