@@ -4,7 +4,7 @@
 <title>PS5 Completion Platform</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
 <style>
 #errbox{display:none;position:fixed;left:8px;bottom:8px;z-index:20000;background:#c00000;color:#fff;font-size:10.5px;padding:8px 12px;border-radius:8px;max-width:92vw;white-space:pre-wrap;font-family:Consolas,monospace}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -643,29 +643,8 @@ try{document.querySelectorAll('table[id]').forEach(tb=>{
  mk();syncTh(tb);
  new MutationObserver(()=>{mk();applyFilters(tb.id);syncTh(tb)}).observe(tb,{childList:true});
 });}catch(e){}
-const USERS={'MOHAMED ABDELGAWAD':'m123@','JABESTEEN':'j123@','ZEESHAN ANWAR':'z123@'};
-let CANEDIT=false;
 function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.classList.add('on'),10);setTimeout(()=>{t.classList.remove('on');setTimeout(()=>t.remove(),350)},2600)}
-function applyAuth(){CANEDIT=false;const w=(sget('ps5who')||'').toUpperCase();
- if(w&&USERS[w])CANEDIT=true;
- document.body.classList.toggle('canedit',CANEDIT);
- const lb=$('loginbtn');
- if(CANEDIT){lb.innerHTML='&#128274; '+esc(w)+' | LOGOUT';lb.classList.add('on')}
- else{lb.innerHTML='&#128274; LOGIN TO EDIT';lb.classList.remove('on')}}
-try{$('loginbtn').addEventListener('click',()=>{
- if(CANEDIT){sdel('ps5who');applyAuth();toast('LOGGED OUT - VIEW ONLY');return}
- $('lmodal').classList.add('on');$('lu').value='';$('lp').value='';$('lmsg').textContent='Authorized engineers only - 3 accounts.';setTimeout(()=>$('lu').focus(),60)});
-try{$('lcx').addEventListener('click',()=>$('lmodal').classList.remove('on'));}catch(e){}
-function tryLogin(){const u=$('lu').value.trim().toUpperCase(),p=$('lp').value;
- if(USERS[u]&&USERS[u]===p){sset('ps5who',u);applyAuth();$('lmodal').classList.remove('on');toast('WELCOME '+u+' - EDIT MODE ON');if(RENDER[V])RENDER[V]()}
- else{$('lmsg').innerHTML='<b style="color:#c00000">&#10008; Wrong user or password.</b>';$('lmbox').classList.add('shake');setTimeout(()=>$('lmbox').classList.remove('shake'),400)}}
-try{$('lok').addEventListener('click',tryLogin);}catch(e){}
-try{['lu','lp'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')tryLogin()}));}catch(e){}
-try{applyAuth();}catch(e){}
-try{document.addEventListener('beforeinput',e=>{
- if(!CANEDIT&&e.target.classList&&e.target.classList.contains('edt')){e.preventDefault();toast('VIEW ONLY - login to edit')}});
-document.addEventListener('focusin',e=>{
- if(!CANEDIT&&e.target.classList&&e.target.classList.contains('edt')){e.target.blur()}});}catch(e){}
+CANEDIT=true;document.body.classList.add('canedit');
 function tblName(h2){return ((h2.childNodes[0]&&h2.childNodes[0].textContent)||'SHEET').replace(/[^A-Za-z0-9 ]+/g,' ').trim().slice(0,28)||'SHEET'}
 function exportPanel(pn,h2){
  const tables=[...pn.querySelectorAll('table[id]')];
