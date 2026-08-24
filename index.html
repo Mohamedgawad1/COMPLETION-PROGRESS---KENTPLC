@@ -235,7 +235,7 @@ const HEX={'':'','#FFFFEB9C':'#ffeb9c','#FFC6EFCE':'#c6efce','#FFFFC7CE':'#ffc7c
 let ONLINE=true,V='dash',F={cat:'',stt:''};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const doneI=s=>/complete/i.test(s)||s==='Closed';
+const doneI=s=>{s=String(s||'').trim();if(/to\s*be/i.test(s))return false;return /^comp/i.test(s)||/^closed$/i.test(s);};
 const pcol=p=>p>=90?'#2e7d32':(p>=50?'#ed7d31':(p>0?'#c00000':'#8a97a5'));
 if(!navigator.onLine||location.protocol==='file:'){$('syncbadge').textContent='● OFFLINE - saved locally';$('syncbadge').classList.add('off');ONLINE=false;}
 function save(sh,id,patch){
