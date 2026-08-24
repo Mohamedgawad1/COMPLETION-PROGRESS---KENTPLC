@@ -286,6 +286,9 @@ const PALETTE=['','FFFFEB9C','FFC6EFCE','FFFFC7CE','FFBDD7EE'];
 const HEX={'':'','#FFFFEB9C':'#ffeb9c','#FFC6EFCE':'#c6efce','#FFFFC7CE':'#ffc7ce','#FFBDD7EE':'#bdd7ee'};
 let ONLINE=true,V='dash',F={cat:'',stt:''};
 const $=id=>document.getElementById(id);
+function sget(k){try{return sessionStorage.getItem(k)}catch(e){return null}}
+function sset(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}
+function sdel(k){try{sessionStorage.removeItem(k)}catch(e){}}
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const doneI=s=>/complete/i.test(s)||s==='Closed';
 const pcol=p=>p>=90?'#2e7d32':(p>=50?'#ed7d31':(p>0?'#c00000':'#8a97a5'));
@@ -630,36 +633,36 @@ function openMenu(th,tid,ci){closeMenu();const tb=document.getElementById(tid);i
  m.querySelector('[data-a=all]').addEventListener('click',()=>{if(FILTERS[tid])delete FILTERS[tid][ci];applyFilters(tid);syncTh(tb);closeMenu()});
  m.querySelector('[data-a=ok]').addEventListener('click',()=>{FILTERS[tid]=FILTERS[tid]||{};FILTERS[tid][ci]=cur;applyFilters(tid);syncTh(tb);closeMenu()});
  draw('');FMENU=m;m.querySelector('input').focus();}
-document.querySelectorAll('table[id]').forEach(tb=>{
+try{document.querySelectorAll('table[id]').forEach(tb=>{
  function mk(){tb.querySelectorAll('thead th').forEach((th,i)=>{if(th.querySelector('.fbtn'))return;
   const b=document.createElement('span');b.className='fbtn';b.textContent='▾';
   b.addEventListener('click',ev=>{ev.stopPropagation();openMenu(th,tb.id,i)});th.appendChild(b)})}
  mk();syncTh(tb);
  new MutationObserver(()=>{mk();applyFilters(tb.id);syncTh(tb)}).observe(tb,{childList:true});
-});
+});}catch(e){}
 const USERS={'MOHAMED ABDELGAWAD':'m123@','JABESTEEN':'j123@','ZEESHAN ANWAR':'z123@'};
 let CANEDIT=false;
 function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.classList.add('on'),10);setTimeout(()=>{t.classList.remove('on');setTimeout(()=>t.remove(),350)},2600)}
-function applyAuth(){CANEDIT=false;const w=(sessionStorage.getItem('ps5who')||'').toUpperCase();
+function applyAuth(){CANEDIT=false;const w=(sget('ps5who')||'').toUpperCase();
  if(w&&USERS[w])CANEDIT=true;
  document.body.classList.toggle('canedit',CANEDIT);
  const lb=$('loginbtn');
  if(CANEDIT){lb.innerHTML='&#128274; '+esc(w)+' | LOGOUT';lb.classList.add('on')}
  else{lb.innerHTML='&#128274; LOGIN TO EDIT';lb.classList.remove('on')}}
-$('loginbtn').addEventListener('click',()=>{
- if(CANEDIT){sessionStorage.removeItem('ps5who');applyAuth();toast('LOGGED OUT - VIEW ONLY');return}
+try{$('loginbtn').addEventListener('click',()=>{
+ if(CANEDIT){sdel('ps5who');applyAuth();toast('LOGGED OUT - VIEW ONLY');return}
  $('lmodal').classList.add('on');$('lu').value='';$('lp').value='';$('lmsg').textContent='Authorized engineers only - 3 accounts.';setTimeout(()=>$('lu').focus(),60)});
-$('lcx').addEventListener('click',()=>$('lmodal').classList.remove('on'));
+try{$('lcx').addEventListener('click',()=>$('lmodal').classList.remove('on'));}catch(e){}
 function tryLogin(){const u=$('lu').value.trim().toUpperCase(),p=$('lp').value;
- if(USERS[u]&&USERS[u]===p){sessionStorage.setItem('ps5who',u);applyAuth();$('lmodal').classList.remove('on');toast('WELCOME '+u+' - EDIT MODE ON');if(RENDER[V])RENDER[V]()}
+ if(USERS[u]&&USERS[u]===p){sset('ps5who',u);applyAuth();$('lmodal').classList.remove('on');toast('WELCOME '+u+' - EDIT MODE ON');if(RENDER[V])RENDER[V]()}
  else{$('lmsg').innerHTML='<b style="color:#c00000">&#10008; Wrong user or password.</b>';$('lmbox').classList.add('shake');setTimeout(()=>$('lmbox').classList.remove('shake'),400)}}
-$('lok').addEventListener('click',tryLogin);
-['lu','lp'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')tryLogin()}));
-applyAuth();
-document.addEventListener('beforeinput',e=>{
+try{$('lok').addEventListener('click',tryLogin);}catch(e){}
+try{['lu','lp'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')tryLogin()}));}catch(e){}
+try{applyAuth();}catch(e){}
+try{document.addEventListener('beforeinput',e=>{
  if(!CANEDIT&&e.target.classList&&e.target.classList.contains('edt')){e.preventDefault();toast('VIEW ONLY - login to edit')}});
 document.addEventListener('focusin',e=>{
- if(!CANEDIT&&e.target.classList&&e.target.classList.contains('edt')){e.target.blur()}});
+ if(!CANEDIT&&e.target.classList&&e.target.classList.contains('edt')){e.target.blur()}});}catch(e){}
 function tblName(h2){return ((h2.childNodes[0]&&h2.childNodes[0].textContent)||'SHEET').replace(/[^A-Za-z0-9 ]+/g,' ').trim().slice(0,28)||'SHEET'}
 function exportPanel(pn,h2){
  const tables=[...pn.querySelectorAll('table[id]')];
@@ -686,16 +689,17 @@ function exportPanel(pn,h2){
 function printPanel(pn){const v=pn.closest('.view');
  document.body.classList.add('print-one');pn.classList.add('pp');if(v)v.classList.add('pv');
  setTimeout(()=>{window.print();setTimeout(()=>{document.body.classList.remove('print-one');pn.classList.remove('pp');if(v)v.classList.remove('pv')},500)},60)}
-document.querySelectorAll('.panel h2').forEach(h2=>{if(h2.querySelector('.pnlbtns'))return;
+try{document.querySelectorAll('.panel h2').forEach(h2=>{if(h2.querySelector('.pnlbtns'))return;
  const bar=document.createElement('span');bar.className='pnlbtns';
  const bx=document.createElement('button');bx.className='pbt';bx.innerHTML='&#128190; SAVE EXCEL';
  const bp=document.createElement('button');bp.className='pbt';bp.innerHTML='&#128424; PRINT';
  bx.addEventListener('click',()=>exportPanel(h2.closest('.panel'),h2));
  bp.addEventListener('click',()=>printPanel(h2.closest('.panel')));
- bar.append(bx,bp);h2.appendChild(bar)});
+ bar.append(bx,bp);h2.appendChild(bar)});}catch(e){}
 try{renderMs()}catch(e){}
-$('q-ms').addEventListener('input',renderMs);
-try{tick()}catch(e){}setInterval(tick,1000);
+try{$('q-ms').addEventListener('input',renderMs)}catch(e){}
+try{tick()}catch(e){}try{setInterval(tick,1000)}catch(e){}
+setTimeout(function(){document.querySelectorAll('.panel.pre').forEach(function(p){p.classList.add('in')})},1500);
 try{applyHash()||show('dash')}catch(e){show('dash')}
 try{initReveal()}catch(e){document.querySelectorAll('.panel').forEach(function(p){p.classList.add('in')})}
 try{countUp()}catch(e){}
