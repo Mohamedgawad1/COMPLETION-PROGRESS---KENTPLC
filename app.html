@@ -588,4 +588,25 @@ try{tick()}catch(e){}setInterval(tick,1000);
 try{applyHash()||show('dash')}catch(e){show('dash')}
 try{initReveal()}catch(e){document.querySelectorAll('.panel').forEach(function(p){p.classList.add('in')})}
 try{countUp()}catch(e){}
-</script></body></html>
+</script>
+<style>
+#xlsbtn{position:fixed;right:14px;bottom:14px;z-index:999;background:linear-gradient(135deg,#ed7d31,#f3a35c);color:#0b2239;border:none;border-radius:10px;padding:11px 18px;font:800 11px/1 Arial,sans-serif;letter-spacing:.8px;cursor:pointer;box-shadow:0 4px 14px -4px rgba(237,125,49,.65)}
+#xlsbtn:hover{filter:brightness(1.07)}
+#xlsbtn:active{transform:scale(.96)}
+#xlsbtn[disabled]{opacity:.55;cursor:wait}
+</style>
+<button id="xlsbtn">&#11015;&nbsp; DOWNLOAD EXCEL</button>
+<script>
+(function(){"use strict";
+function activeView(){var vs=document.querySelectorAll('.view');for(var i=0;i<vs.length;i++){if(getComputedStyle(vs[i]).display!=='none')return vs[i];}return document.getElementById('v-dash');}
+function tname(t,i){var p=t.closest('.panel');var h2=p?p.querySelector('h2'):null;var n=h2?h2.textContent:(t.id||('TABLE'+(i+1)));n=n.replace(/[\\\/\*\?\[\]:]/g,'').replace(/\s+/g,' ').trim();return n.substring(0,28)||('SHEET'+(i+1));}
+function csvOf(t){var out=['\ufeff'];t.querySelectorAll('tr').forEach(function(r){var c=[];r.querySelectorAll('th,td').forEach(function(d){c.push('"'+(d.textContent||'').replace(/"/g,'""')+'"');});out.push(c.join(','));});return out.join('\r\n');}
+function dl(txt,name,ext){var b=new Blob([txt],{type:'text/'+ext});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);}
+function base(){var v=activeView();return 'PS5_'+(v.id?v.id.replace(/^v-/,'').toUpperCase():'PAGE')+'_'+new Date().toISOString().slice(0,10);}
+function doCSV(){var v=activeView(),k=0;v.querySelectorAll('table').forEach(function(t,i){k++;dl(csvOf(t),base()+'_'+tname(t,i)+'.csv','csv');});return k;}
+function ensureXLSX(cb){if(window.XLSX)return cb(true);try{var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';s.onload=function(){cb(!!window.XLSX);};s.onerror=function(){cb(false);};document.head.appendChild(s);}catch(e){cb(false);}}
+var btn=document.getElementById('xlsbtn');
+btn.addEventListener('click',function(){btn.disabled=true;ensureXLSX(function(ok){var done=function(){btn.disabled=false;};try{if(!ok){doCSV();done();return;}var v=activeView(),wb,n=0;wb=(window.XLSX&&XLSX.utils)?XLSX.utils.book_new():null;if(!wb){doCSV();done();return;}v.querySelectorAll('table').forEach(function(t,i){var rows=[];t.querySelectorAll('tr').forEach(function(r){var c=[];r.querySelectorAll('th,td').forEach(function(d){c.push(String(d.textContent||'').replace(/\s+/g,' ').trim());});rows.push(c);});if(rows.length<2)return;XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),tname(t,i)+(i>0?'_'+i:''));n++;});if(!n){doCSV();done();return;}else{XLSX.writeFile(wb,base()+'.xlsx');done();return;}}catch(e){try{doCSV();}catch(e2){}done();}});});
+})();
+</script>
+</body></html>
