@@ -141,6 +141,7 @@ header,#wrap,.flow,footer{position:relative;z-index:1}
  <div><h1>PS5 <span>COMPLETION PLATFORM</span></h1><div class="meta">Report Date: 22-08-26    |    Source: PS-5 COMPLETIONS DPR SUMMERY -22-08-26(2).xlsx</div></div>
  <div id="clock"></div>
  <div id="syncbadge">&#9679; SYNCED TO EXCEL</div>
+ <button id="xlsbtn" title="DOWNLOAD EXCEL">&#11015;</button><button id="prnbtn" title="PRINT">&#128424;</button><button id="svbtn" title="SAVE">&#128190;</button>
 </header>
 <div class="flow">
  <button class="step on" data-v="dash">1 &middot; DASHBOARD</button>
@@ -590,18 +591,19 @@ try{initReveal()}catch(e){document.querySelectorAll('.panel').forEach(function(p
 try{countUp()}catch(e){}
 </script>
 <style>
-#xlsbtn{position:fixed;right:16px;bottom:16px;z-index:999;display:flex;align-items:center;gap:9px;border:none;border-radius:999px;padding:12px 18px 12px 12px;color:#fff;font:800 11.5px/1 Arial,sans-serif;letter-spacing:.9px;cursor:pointer;background:linear-gradient(135deg,#ff9a4d 0%,#ed7d31 45%,#d95b17 100%);box-shadow:0 8px 22px -6px rgba(237,125,49,.9),inset 0 1px 0 rgba(255,255,255,.4),inset 0 -2px 6px rgba(120,40,0,.25);overflow:hidden;transition:transform .15s ease;animation:xlpulse 2.8s ease-in-out infinite}
-#xlsbtn::before{content:'';position:absolute;top:0;left:-75%;width:45%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);animation:xlsheen 3.4s ease-in-out infinite;pointer-events:none}
-#xlsbtn:hover{transform:translateY(-2px) scale(1.04)}
-#xlsbtn:active{transform:scale(.96)}
-#xlsbtn[disabled]{opacity:.55;cursor:wait;animation:none}
-.xic{display:inline-flex;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.25);box-shadow:inset 0 1px 0 rgba(255,255,255,.35);align-items:center;justify-content:center;font-size:13px}
-.xchip{background:#1e7145;color:#fff;border-radius:6px;padding:3px 8px;font-size:9px;font-weight:900;letter-spacing:1.2px;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 2px 5px -2px rgba(0,0,0,.5)}
-@keyframes xlpulse{0%,100%{box-shadow:0 8px 22px -6px rgba(237,125,49,.9),inset 0 1px 0 rgba(255,255,255,.4)}50%{box-shadow:0 10px 30px -4px rgba(255,140,60,1),inset 0 1px 0 rgba(255,255,255,.4)}}
-@keyframes xlsheen{0%{left:-75%}55%,100%{left:135%}}
+#xlsbtn,#prnbtn,#svbtn{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:none;border-radius:50%;color:#fff;font-size:14px;cursor:pointer;margin-left:8px;flex:0 0 auto;transition:transform .15s ease,filter .15s ease}
+#xlsbtn{background:linear-gradient(135deg,#ff9a4d,#ed7d31 50%,#d95b17);box-shadow:0 3px 10px -3px rgba(237,125,49,.8),inset 0 1px 0 rgba(255,255,255,.4)}
+#prnbtn{background:linear-gradient(135deg,#5b8dd6,#39679f 50%,#274a77);box-shadow:0 3px 10px -3px rgba(57,103,159,.8),inset 0 1px 0 rgba(255,255,255,.35)}
+#svbtn{background:linear-gradient(135deg,#2fbe6e,#1f9d55 50%,#136b3a);box-shadow:0 3px 10px -3px rgba(31,157,85,.8),inset 0 1px 0 rgba(255,255,255,.35)}
+#xlsbtn:hover,#prnbtn:hover,#svbtn:hover{transform:translateY(-1px);filter:brightness(1.12)}
+#xlsbtn:active,#prnbtn:active,#svbtn:active{transform:scale(.93)}
+#xlsbtn:hover{transform:translateY(-2px) scale(1.08)}
+#xlsbtn:active{transform:scale(.94)}
+#xlsbtn[disabled]{opacity:.55;cursor:wait}
 @media print{#xlsbtn{display:none!important}}
 </style>
-<button id="xlsbtn"><span class="xic">&#11015;</span>DOWNLOAD EXCEL<span class="xchip">XLSX</span></button>
+
+
 <script>
 (function(){"use strict";
 function activeView(){var vs=document.querySelectorAll('.view');for(var i=0;i<vs.length;i++){if(getComputedStyle(vs[i]).display!=='none')return vs[i];}return document.getElementById('v-dash');}
@@ -616,38 +618,15 @@ btn.addEventListener('click',function(){btn.disabled=true;ensureXLSX(function(ok
 })();
 </script>
 
-<style>
-#prnbtn,#svbtn{position:fixed;right:16px;z-index:999;display:flex;align-items:center;gap:8px;border:none;border-radius:999px;padding:11px 18px;color:#fff;font:800 11px/1 Arial,sans-serif;letter-spacing:.8px;cursor:pointer;overflow:hidden;transition:transform .15s ease}
-#prnbtn{bottom:70px;background:linear-gradient(135deg,#5b8dd6 0%,#39679f 50%,#274a77 100%);box-shadow:0 7px 20px -6px rgba(57,103,159,.9),inset 0 1px 0 rgba(255,255,255,.35)}
-#svbtn{bottom:122px;background:linear-gradient(135deg,#2fbe6e 0%,#1f9d55 50%,#136b3a 100%);box-shadow:0 7px 20px -6px rgba(31,157,85,.9),inset 0 1px 0 rgba(255,255,255,.35)}
-#prnbtn:hover,#svbtn:hover{transform:translateY(-2px) scale(1.04)}
-#prnbtn:active,#svbtn:active{transform:scale(.96)}
-#prnbtn[disabled],#svbtn[disabled]{opacity:.6;cursor:wait}
-.pic{display:inline-flex;width:23px;height:23px;border-radius:50%;background:rgba(255,255,255,.25);align-items:center;justify-content:center;font-size:12px}
-@media print{
- body{background:#fff!important}
- body::before{display:none!important}
- header,.flow,footer,.tools,.hint,#syncbadge,#clock,#xlsbtn,#prnbtn,#svbtn{display:none!important}
- .view{display:none!important}
- .view.on{display:block!important}
- .panel{background:#fff!important;border:1px solid #b9c2cd!important;box-shadow:none!important;margin:8px 0!important;break-inside:auto}
- .kpis{padding-top:8px!important}
- .tblwrap{max-height:none!important;overflow:visible!important;border:none!important}
- th{position:static!important;background:#e8edf3!important;color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
- td{color:#000!important;background:#fff!important}
- tbody tr:nth-child(even) td{background:#f4f6f9!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
- h1,h2,h3,p,span,b,div,td,th,li,label{color:#000!important;text-shadow:none!important}
-}
-</style>
-<button id="prnbtn"><span class="pic">&#128424;</span>PRINT</button>
-<button id="svbtn"><span class="pic">&#128190;</span>SAVE</button>
+
+
 <script>
 (function(){"use strict";
 var pb=document.getElementById('prnbtn');if(pb)pb.addEventListener('click',function(){try{window.print();}catch(e){}});
 var sb=document.getElementById('svbtn');
 function post(sh,id,patch){try{fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({sheet:sh,id:id},patch))}).catch(function(){});}catch(e){}}
 function resave(){var n=0,i,k,st;try{for(i=0;i<localStorage.length;i++){k=localStorage.key(i);if(!k||k.indexOf('xstate_')!==0)continue;var sh=k.slice(7);try{st=JSON.parse(localStorage.getItem(k)||'{}');}catch(e){continue;}for(var id in st){var v=st[id];if(id==='_c'){for(var j in v){post(sh,j,{color:v[j]});n++;}}else if(id==='_e'){for(var j2 in v){var o=v[j2];for(var c in o){post(sh,j2,{col:c,value:o[c]});n++;}}}else{post(sh,id,{note:v});n++;}}}}catch(e){}
-var old=sb.innerHTML;sb.innerHTML='<span class="pic">&#10003;</span>SAVED '+n;sb.disabled=true;setTimeout(function(){sb.innerHTML=old;sb.disabled=false;},2200);}
+var old=sb.title;sb.textContent='OK'+n;sb.style.fontSize='9px';sb.style.fontWeight='900';sb.disabled=true;setTimeout(function(){sb.innerHTML='&#128190;';sb.style.fontSize='';sb.style.fontWeight='';sb.disabled=false;sb.title=old;},2200);}
 if(sb)sb.addEventListener('click',resave);
 })();
 </script>
