@@ -141,7 +141,7 @@ header,#wrap,.flow,footer{position:relative;z-index:1}
  <div><h1>PS5 <span>COMPLETION PLATFORM</span></h1><div class="meta">Report Date: 22-08-26    |    Source: PS-5 COMPLETIONS DPR SUMMERY -22-08-26(2).xlsx</div></div>
  <div id="clock"></div>
  <div id="syncbadge">&#9679; SYNCED TO EXCEL</div>
- <button id="xlsbtn" title="DOWNLOAD EXCEL">&#11015;</button><button id="prnbtn" title="PRINT">&#128424;</button><button id="svbtn" title="SAVE">&#128190;</button><button id="rfbtn" title="REFRESH / UPDATE">&#8635;</button>
+ <button id="xlsbtn" title="DOWNLOAD EXCEL">&#11015;</button><button id="prnbtn" title="PRINT">&#128424;</button><button id="svbtn" title="SAVE">&#128190;</button><button id="rfbtn" title="REFRESH / UPDATE">&#8635;</button><button id="lgbtn" title="SIGN IN TO EDIT">&#128274;</button>
 </header>
 <div class="flow">
  <button class="step on" data-v="dash">1 &middot; DASHBOARD</button>
@@ -630,6 +630,44 @@ function post(sh,id,patch){try{fetch('/api/state',{method:'POST',headers:{'Conte
 function resave(){var n=0,i,k,st;try{for(i=0;i<localStorage.length;i++){k=localStorage.key(i);if(!k||k.indexOf('xstate_')!==0)continue;var sh=k.slice(7);try{st=JSON.parse(localStorage.getItem(k)||'{}');}catch(e){continue;}for(var id in st){var v=st[id];if(id==='_c'){for(var j in v){post(sh,j,{color:v[j]});n++;}}else if(id==='_e'){for(var j2 in v){var o=v[j2];for(var c in o){post(sh,j2,{col:c,value:o[c]});n++;}}}else{post(sh,id,{note:v});n++;}}}}catch(e){}
 var old=sb.title;sb.textContent='OK'+n;sb.style.fontSize='9px';sb.style.fontWeight='900';sb.disabled=true;setTimeout(function(){sb.innerHTML='&#128190;';sb.style.fontSize='';sb.style.fontWeight='';sb.disabled=false;sb.title=old;},2200);}
 if(sb)sb.addEventListener('click',resave);
+})();
+</script>
+
+<style>
+#lgbtn{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:none;border-radius:50%;font-size:14px;cursor:pointer;margin-left:8px;flex:0 0 auto;background:linear-gradient(135deg,#27405c,#16283c);color:#ffc000;box-shadow:0 3px 10px -3px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.15);transition:transform .15s ease}
+#lgbtn:hover{transform:translateY(-1px);filter:brightness(1.25)}
+#lgbtn:active{transform:scale(.93)}
+#lgmodal{position:fixed;inset:0;background:rgba(3,10,18,.78);z-index:3000;display:none;align-items:center;justify-content:center}
+#lgmodal.on{display:flex}
+.lgcard{background:#0f2438;border:1px solid #2a4a6b;border-radius:14px;padding:24px;width:320px;max-width:92vw;box-shadow:0 24px 60px -12px rgba(0,0,0,.85);text-align:center}
+.lgcard h3{margin:0 0 16px;color:#ffc000;font-size:13px;letter-spacing:1.6px}
+.lgcard select,.lgcard input{width:100%;box-sizing:border-box;margin-bottom:10px;padding:10px 12px;border-radius:9px;border:1px solid #2a4a6b;background:#0a1a2c;color:#eaf1f8;font-size:12.5px;outline:none}
+.lgcard select:focus,.lgcard input:focus{border-color:#ed7d31}
+.lgo{width:100%;padding:11px;border:none;border-radius:9px;background:linear-gradient(135deg,#ff9a4d,#d95b17);color:#141414;font-weight:900;font-size:12px;letter-spacing:1.2px;cursor:pointer;margin-top:2px}
+.lgo:hover{filter:brightness(1.1)}
+.lgerr{color:#ff8577;font-size:11px;text-align:center;min-height:15px;margin-top:8px;font-weight:700}
+@media print{#lgbtn{display:none!important}}
+</style>
+<div id="lgmodal"><div class="lgcard"><h3>&#128274; SIGN IN TO EDIT</h3><select id="lguser"></select><input id="lgpass" type="password" placeholder="PASSWORD" autocomplete="off"><button class="lgo" id="lgo">ENTER</button><div class="lgerr" id="lgerr"></div></div></div>
+<script>
+(function(){"use strict";
+var USERS={'MOHAMED ABDELGAWAD':'m123@','JABESTEEN':'j123@','ZEESHAN ANWAR':'z123@'};
+function get(k){try{return sessionStorage.getItem(k)}catch(e){return null}}
+function setk(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}
+function delk(k){try{sessionStorage.removeItem(k)}catch(e){}}
+function authed(){return !!get('ps5who')}
+function applyAll(){var on=authed();var b=document.getElementById('lgbtn');if(b){b.innerHTML=on?'&#128275;':'&#128274;';b.style.background=on?'linear-gradient(135deg,#2fbe6e,#136b3a)':'linear-gradient(135deg,#27405c,#16283c)';b.style.color=on?'#fff':'#ffc000';b.title=on?('EDITING AS '+get('ps5who')+' - CLICK TO SIGN OUT'):'SIGN IN TO EDIT';}
+var nodes=document.querySelectorAll('.edt');for(var i=0;i<nodes.length;i++){nodes[i].contentEditable=on?'true':'false';}
+var m=document.getElementById('lgmodal');if(m)m.classList.remove('on');var p=document.getElementById('lgpass');if(p)p.value='';var er=document.getElementById('lgerr');if(er)er.textContent='';}
+function openModal(){var m=document.getElementById('lgmodal');if(!m)return;m.classList.add('on');var s=document.getElementById('lguser');if(s&&!s.options.length){for(var k in USERS){var o=document.createElement('option');o.value=k;o.textContent=k;s.appendChild(o);}}setTimeout(function(){var p=document.getElementById('lgpass');if(p)p.focus();},80);}
+function tryIn(){var s=document.getElementById('lguser'),p=document.getElementById('lgpass'),er=document.getElementById('lgerr');if(!s||!p||!er)return;var u=s.value;if(USERS[u]===p.value){setk('ps5who',u);applyAll();}else{er.textContent='WRONG PASSWORD - TRY AGAIN';p.value='';p.focus();}}
+document.addEventListener('beforeinput',function(e){var t=e.target;if(t&&t.classList&&t.classList.contains('edt')&&!authed()){e.preventDefault();openModal();}},true);
+document.addEventListener('click',function(e){if(e.target&&e.target.id==='lgmodal'){e.target.classList.remove('on');}},true);
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){var m=document.getElementById('lgmodal');if(m)m.classList.remove('on');}});
+var b=document.getElementById('lgbtn');if(b)b.addEventListener('click',function(){if(authed()){if(window.confirm('SIGN OUT ('+get('ps5who')+') ?')){delk('ps5who');applyAll();}}else{openModal();}});
+var go=document.getElementById('lgo');if(go)go.addEventListener('click',tryIn);
+var pp=document.getElementById('lgpass');if(pp)pp.addEventListener('keydown',function(e){if(e.key==='Enter')tryIn();});
+applyAll();
 })();
 </script>
 </body></html>
