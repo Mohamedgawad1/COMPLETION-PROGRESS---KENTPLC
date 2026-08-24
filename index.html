@@ -141,7 +141,7 @@ header,#wrap,.flow,footer{position:relative;z-index:1}
  <div><h1>PS5 <span>COMPLETION PLATFORM</span></h1><div class="meta">Report Date: 22-08-26    |    Source: PS-5 COMPLETIONS DPR SUMMERY -22-08-26(2).xlsx</div></div>
  <div id="clock"></div>
  <div id="syncbadge">&#9679; SYNCED TO EXCEL</div>
- <button id="xlsbtn" title="DOWNLOAD EXCEL">&#11015;</button><button id="prnbtn" title="PRINT">&#128424;</button><button id="svbtn" title="SAVE">&#128190;</button>
+ <button id="xlsbtn" title="DOWNLOAD EXCEL">&#11015;</button><button id="prnbtn" title="PRINT">&#128424;</button><button id="svbtn" title="SAVE">&#128190;</button><button id="rfbtn" title="REFRESH / UPDATE">&#8635;</button>
 </header>
 <div class="flow">
  <button class="step on" data-v="dash">1 &middot; DASHBOARD</button>
@@ -592,6 +592,7 @@ try{countUp()}catch(e){}
 </script>
 <style>
 #xlsbtn,#prnbtn,#svbtn{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:none;border-radius:50%;color:#fff;font-size:14px;cursor:pointer;margin-left:8px;flex:0 0 auto;transition:transform .15s ease,filter .15s ease}
+#rfbtn{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:none;border-radius:50%;color:#141414;font-size:15px;font-weight:900;cursor:pointer;margin-left:8px;flex:0 0 auto;background:linear-gradient(135deg,#ffe27a,#f0a500 55%,#c47f00);box-shadow:0 3px 10px -3px rgba(240,165,0,.9),inset 0 1px 0 rgba(255,255,255,.5);transition:transform .3s ease}#rfbtn:hover{transform:rotate(120deg)}#rfbtn:active{transform:scale(.92)}
 #xlsbtn{background:linear-gradient(135deg,#ff9a4d,#ed7d31 50%,#d95b17);box-shadow:0 3px 10px -3px rgba(237,125,49,.8),inset 0 1px 0 rgba(255,255,255,.4)}
 #prnbtn{background:linear-gradient(135deg,#5b8dd6,#39679f 50%,#274a77);box-shadow:0 3px 10px -3px rgba(57,103,159,.8),inset 0 1px 0 rgba(255,255,255,.35)}
 #svbtn{background:linear-gradient(135deg,#2fbe6e,#1f9d55 50%,#136b3a);box-shadow:0 3px 10px -3px rgba(31,157,85,.8),inset 0 1px 0 rgba(255,255,255,.35)}
@@ -600,7 +601,7 @@ try{countUp()}catch(e){}
 #xlsbtn:hover{transform:translateY(-2px) scale(1.08)}
 #xlsbtn:active{transform:scale(.94)}
 #xlsbtn[disabled]{opacity:.55;cursor:wait}
-@media print{#xlsbtn{display:none!important}}
+@media print{body::before,#xlsbtn,#prnbtn,#svbtn,#rfbtn,header,.flow,footer,.tools,.hint,#syncbadge,#clock{display:none!important}body{background:#fff!important}.view{display:none!important}.view.on{display:block!important}.panel{background:#fff!important;border:1px solid #b9c2cd!important;box-shadow:none!important;margin:8px 0!important;break-inside:auto}.kpis{padding-top:8px!important}.tblwrap{max-height:none!important;overflow:visible!important;border:none!important}th{position:static!important;background:#e8edf3!important;color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}td{color:#000!important;background:#fff!important}tbody tr:nth-child(even) td{background:#f4f6f9!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}h1,h2,h3,p,span,b,div,td,th,li,label{color:#000!important;text-shadow:none!important}}
 </style>
 
 
@@ -623,6 +624,7 @@ btn.addEventListener('click',function(){btn.disabled=true;ensureXLSX(function(ok
 <script>
 (function(){"use strict";
 var pb=document.getElementById('prnbtn');if(pb)pb.addEventListener('click',function(){try{window.print();}catch(e){}});
+var rb=document.getElementById('rfbtn');if(rb)rb.addEventListener('click',function(){try{location.reload()}catch(e){}});
 var sb=document.getElementById('svbtn');
 function post(sh,id,patch){try{fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({sheet:sh,id:id},patch))}).catch(function(){});}catch(e){}}
 function resave(){var n=0,i,k,st;try{for(i=0;i<localStorage.length;i++){k=localStorage.key(i);if(!k||k.indexOf('xstate_')!==0)continue;var sh=k.slice(7);try{st=JSON.parse(localStorage.getItem(k)||'{}');}catch(e){continue;}for(var id in st){var v=st[id];if(id==='_c'){for(var j in v){post(sh,j,{color:v[j]});n++;}}else if(id==='_e'){for(var j2 in v){var o=v[j2];for(var c in o){post(sh,j2,{col:c,value:o[c]});n++;}}}else{post(sh,id,{note:v});n++;}}}}catch(e){}
