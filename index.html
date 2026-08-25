@@ -225,11 +225,13 @@ header,#wrap,.flow,footer{position:relative;z-index:1}
 </section>
 
 <section class="view" id="v-eit">
+ <div class="hero">
+  <h2 style="color:#1565c0">EIT Cables Dashboard</h2>
+  <div id="eit-kpis"></div>
+ </div>
  <div class="panel">
-  <h2 style="border-color:#1565c0">EIT Cables &mdash; 11,239 cables across 290 subsystems</h2>
-  <div style="margin:8px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-   <input type="text" id="eit-search" placeholder="Search subsystem / asset tag / from / to..."
-    style="flex:1;min-width:200px;padding:6px 10px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+  <div class="tools">
+   <input type="search" id="eit-search" placeholder="Search subsystem / asset tag / from / to...">
    <span id="eit-count" style="font-size:12px;color:#666"></span>
   </div>
   <div class="tblwrap"><table id="t-eit"></table></div>
@@ -351,7 +353,7 @@ function subRows(src,isP){
 }
 function renderSub(){
  const x=RFC.find(r=>r.sid===SUBCUR)||{name:SUBCUR};
- $('sub-name').innerHTML='<span class="sidchip">'+esc(SUBCUR||'-')+'</span>'+esc(x.name||'SELECT A SUBSYSTEM');
+  $('sub-name').innerHTML='<span class="sidchip">'+esc(SUBCUR||'-')+'</span>'+esc(x.name||'SELECT A SUBSYSTEM');
  const P=PUNCH.filter(r=>r[9]===SUBCUR);
  const I=ITR.filter(r=>r[9]===SUBCUR);
  const pc=P.filter(r=>ovv('PUNCH LIST',r[0],'STATUS',r[5])==='Closed').length;
@@ -919,61 +921,80 @@ function getDisc(sid) {
   return 'E';
 }
 
+let EIT_BUILT=false;
 function initEIT() {
   const tb=document.getElementById('t-eit');
   const ct=document.getElementById('eit-count');
   const sr=document.getElementById('eit-search');
   if(!tb) return;
 
-  let html='<thead><tr><th>#</th><th>Subsystem</th><th>Cables</th>'
-    +'<th>Assets</th><th>ITRs Closed</th><th>ITR %</th><th style="min-width:90px">Links</th></tr></thead><tbody>';
-  SUBS.forEach((s,i) => {
-    const disc=getDisc(s.sid);
-    const col=DISC_COLOR[disc]||'#333';
-    html+='<tr data-sid="'+s.sid+'" style="cursor:pointer" '
-      +'onclick="window._eitDetail(\''+s.sid+'\',this)">'
-      +'<td>'+(i+1)+'</td>'
-      +'<td class="sublink" data-go="'+s.sid+'" style="color:'+col+';font-weight:600">'+s.name+'</td>'
-      +'<td style="text-align:right;font-weight:600">'+s.cables+'</td>'
-      +'<td style="text-align:right">'+s.assets+'</td>'
-      +'<td style="text-align:right">'+s.itrs_closed+'/'+s.itrs_total+'</td>'
-      +'<td style="text-align:right">'+s.itr_pct+'</td>'
-      +'<td style="white-space:nowrap;font-size:11px">'
-      +'<span class="sublink" data-go="'+s.sid+'" style="color:#1565c0;cursor:pointer" title="Go to Subsystem page">SUB</span> &middot; '
-      +'<span onclick="event.stopPropagation();show(\'rfc\');setTimeout(function(){var q=document.getElementById(\'q-rfc\');if(q){q.value=\''+s.sid+'\';q.dispatchEvent(new Event(\'input\'))}},80)" '
-      +'style="color:#e65100;cursor:pointer" title="Go to RFC Progress">RFC</span>'
-      +'</td>'
-      +'</tr>';
-  });
-  html+='</tbody>';
-  tb.innerHTML=html;
-  ct.textContent=SUBS.length+' subsystems';
-
-  // Search
-  sr.addEventListener('input', function() {
-    const q=this.value.toLowerCase();
-    const rows=tb.querySelectorAll('tbody tr');
-    let vis=0;
-    rows.forEach(r => {
-      const txt=r.textContent.toLowerCase();
-      const show=!q||txt.includes(q);
-      r.style.display=show?'':'none';
-      if(show) vis++;
+  if(!EIT_BUILT){
+    let html='<thead><tr><th>#</th><th>Subsystem</th><th>Cables</th>'
+      +'<th>Assets</th><th>ITRs Closed</th><th>ITR %</th><th style="min-width:90px">Links</th></tr></thead><tbody>';
+    SUBS.forEach((s,i) => {
+      const disc=getDisc(s.sid);
+      const col=DISC_COLOR[disc]||'#333';
+      html+='<tr data-sid="'+s.sid+'" style="cursor:pointer" '
+        +'onclick="window._eitDetail(\''+s.sid+'\',this)">'
+        +'<td>'+(i+1)+'</td>'
+        +'<td class="sublink" data-go="'+s.sid+'" style="color:'+col+';font-weight:600">'+s.name+'</td>'
+        +'<td style="text-align:right;font-weight:600">'+s.cables+'</td>'
+        +'<td style="text-align:right">'+s.assets+'</td>'
+        +'<td style="text-align:right">'+s.itrs_closed+'/'+s.itrs_total+'</td>'
+        +'<td style="text-align:right">'+s.itr_pct+'</td>'
+        +'<td style="white-space:nowrap;font-size:11px">'
+        +'<span class="sublink" data-go="'+s.sid+'" style="color:#1565c0;cursor:pointer" title="Go to Subsystem page">SUB</span> &middot; '
+        +'<span onclick="event.stopPropagation();show(\'rfc\');setTimeout(function(){var q=document.getElementById(\'q-rfc\');if(q){q.value=\''+s.sid+'\';q.dispatchEvent(new Event(\'input\'))}},80)" '
+        +'style="color:#e65100;cursor:pointer" title="Go to RFC Progress">RFC</span>'
+        +'</td>'
+        +'</tr>';
     });
-    ct.textContent=vis+' of '+SUBS.length+' subsystems';
+    html+='</tbody>';
+    tb.innerHTML=html;
+    ct.textContent=SUBS.length+' subsystems';
+
+    sr.addEventListener('input', function() {
+      const q=this.value.toLowerCase();
+      const rows=tb.querySelectorAll('tbody tr');
+      let vis=0;
+      rows.forEach(r => {
+        const txt=r.textContent.toLowerCase();
+        const show=!q||txt.includes(q);
+        r.style.display=show?'':'none';
+        if(show) vis++;
+      });
+      ct.textContent=vis+' of '+SUBS.length+' subsystems';
+    });
+    EIT_BUILT=true;
+  }
+  eitFilter('');
+}
+
+function eitFilter(q){
+  q=(q||'').toLowerCase();
+  const tb=document.getElementById('t-eit');
+  const ct=document.getElementById('eit-count');
+  if(!tb) return;
+  const rows=tb.querySelectorAll('tbody tr');
+  let vis=0;
+  rows.forEach(r=>{
+    const txt=r.textContent.toLowerCase();
+    const show=!q||txt.includes(q);
+    r.style.display=show?'':'none';
+    if(show) vis++;
   });
+  if(ct) ct.textContent=vis+' of '+SUBS.length+' subsystems';
 }
 
 window._eitDetail=function(sid, row) {
   const existing=row.nextElementSibling;
   if(existing&&existing.classList.contains('eit-detail')) {
     existing.remove();
-    row.querySelector('td:last-child').textContent='▶ cables';
+    row.querySelector('td:last-child').innerHTML='<span style="color:#1565c0">&#9654; cables</span>';
     return;
   }
-  // Remove any other open detail
   document.querySelectorAll('.eit-detail').forEach(d=>d.remove());
-  document.querySelectorAll('#t-eit tbody tr td:last-child').forEach(td=>td.textContent='▶ cables');
+  document.querySelectorAll('#t-eit tbody tr td:last-child').forEach(td=>td.innerHTML='<span style="color:#1565c0">&#9654; cables</span>');
 
   const cables=DETAIL[sid]||[];
   if(!cables.length) { row.querySelector('td:last-child').textContent='No cables'; return; }
@@ -981,7 +1002,7 @@ window._eitDetail=function(sid, row) {
   const tr=document.createElement('tr');
   tr.className='eit-detail';
   const td=document.createElement('td');
-  td.colSpan=4;
+  td.colSpan=7;
   td.style.cssText='padding:8px 12px;background:#f5f7fa;border-top:2px solid #1565c0';
   let h='<div style="font-weight:600;color:#1565c0;margin-bottom:6px;display:flex;align-items:center;gap:12px">'
     +'<span class="sublink" data-go="'+sid+'" style="cursor:pointer;text-decoration:underline">'+sid+'</span>'
@@ -1006,30 +1027,31 @@ window._eitDetail=function(sid, row) {
   td.innerHTML=h;
   tr.appendChild(td);
   row.after(tr);
-  row.querySelector('td:last-child').textContent='▼ hide';
+  row.querySelector('td:last-child').innerHTML='<span style="color:#e65100">&#9660; hide</span>';
 };
 
-// Init when page shown - patch show() to auto-init EIT
 var _origShow=show;
 show=function(v){
   _origShow(v);
-  if(v==='eit')setTimeout(function(){initEIT()},50);
+  if(v==='eit')setTimeout(initEIT,50);
 };
 function goEit(sid){
   show('eit');
   setTimeout(function(){
     initEIT();
-    var q=document.getElementById('eit-search');
-    if(q){q.value=sid;q.dispatchEvent(new Event('input'))}
-    // auto-expand cables for this subsystem
+    var sr=document.getElementById('eit-search');
+    if(sr){sr.value=sid;sr.dispatchEvent(new Event('input'))}
+    eitFilter(sid);
     var row=document.querySelector('#t-eit tr[data-sid="'+sid+'"]');
-    if(row)row.click();
-  },100);
+    if(row){
+      row.scrollIntoView({behavior:'smooth',block:'center'});
+      setTimeout(function(){row.click()},150);
+    }
+  },80);
 }
 document.querySelector('[data-v="eit"]').addEventListener('click', function() {
   setTimeout(initEIT, 50);
 });
-// Also init if already on this page
 if(document.getElementById('v-eit')&&document.getElementById('v-eit').classList.contains('on')) {
   initEIT();
 }
