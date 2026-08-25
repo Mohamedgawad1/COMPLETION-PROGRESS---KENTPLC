@@ -981,7 +981,7 @@ window._eitDetail=function(sid, row) {
   const tr=document.createElement('tr');
   tr.className='eit-detail';
   const td=document.createElement('td');
-  td.colSpan=7;
+  td.colSpan=4;
   td.style.cssText='padding:8px 12px;background:#f5f7fa;border-top:2px solid #1565c0';
   let h='<div style="font-weight:600;color:#1565c0;margin-bottom:6px;display:flex;align-items:center;gap:12px">'
     +'<span class="sublink" data-go="'+sid+'" style="cursor:pointer;text-decoration:underline">'+sid+'</span>'
@@ -993,10 +993,8 @@ window._eitDetail=function(sid, row) {
   h+='<table style="width:100%;font-size:12px;border-collapse:collapse">';
   h+='<tr style="background:#e3f2fd"><th style="padding:4px 8px;text-align:left">#</th>'
     +'<th style="padding:4px 8px;text-align:left">Asset Tag</th>'
-    +'<th style="padding:4px 8px;text-align:left">Size</th>'
-    +'<th style="padding:4px 8px;text-align:left">Cores</th>'
-    +'<th style="padding:4px 8px;text-align:left">From</th>'
-    +'<th style="padding:4px 8px;text-align:left">To</th></tr>';
+    +'<th style="padding:4px 8px;text-align:left">From Equipment</th>'
+    +'<th style="padding:4px 8px;text-align:left">To Equipment</th></tr>';
   cables.forEach((c,i) => {
     h+='<tr style="border-bottom:1px solid #e0e0e0">'
       +'<td style="padding:3px 8px">'+(i+1)+'</td>'
