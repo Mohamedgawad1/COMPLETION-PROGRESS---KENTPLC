@@ -125,24 +125,43 @@ def save_seen(h):
         json.dump({'hash': h, 'time': time.strftime('%Y-%m-%d %H:%M:%S')}, f)
 
 
+DATE_RE = re.compile(r'PS-5\s*COMPLETIONS\s*DPR\s*SUMMERY\s*-\s*'
+                     r'(\d{1,2})-(\d{1,2})-(\d{2,4})\.xlsx$', re.I)
+
+
+def _date_key(m):
+    """(year, month, day) tuple sortable as strings."""
+    dd, mm, yy = m.group(1), m.group(2), m.group(3)
+    yy = yy if len(yy) == 4 else '20' + yy
+    return (yy, mm.zfill(2), dd.zfill(2))
+
+
 def find_target():
-    cands = []
+    """Newest DPR SUMMERY by the DATE SUFFIX in its name (DD-MM-YY),
+    e.g. 'PS-5 COMPLETIONS DPR SUMMERY -25-08-26.xlsx'.
+    Only the date changes daily - that suffix decides, not file mtime."""
+    best = None
     seen = set()
     for folder in (HOME, DL_SUB):
         if not os.path.isdir(folder):
             continue
         for f in os.listdir(folder):
             b = f.upper()
-            if ('DPR SUMMERY' not in b or not f.lower().endswith('.xlsx')
-                    or f.startswith('~$') or 'BACKUP' in b):
+            if (f.startswith('~$') or not f.lower().endswith('.xlsx')
+                    or 'BACKUP' in b):
+                continue
+            m = DATE_RE.search(f)
+            if not m:
                 continue
             p = os.path.join(folder, f)
             key = os.path.realpath(p)
             if key in seen:
                 continue
             seen.add(key)
-            cands.append((os.path.getmtime(p), p))
-    return max(cands)[1] if cands else None
+            cand = (_date_key(m), os.path.getmtime(p), p)
+            if best is None or cand[:2] > best[:2]:
+                best = cand
+    return best[2] if best else None
 
 
 def header_index(ws, title):
@@ -188,6 +207,23 @@ def apply_fill(ws, row, col, color):
         argb = color if len(color) == 8 else 'FF' + color.lstrip('#')
         cell.fill = PatternFill(start_color=argb, end_color=argb,
                                 fill_type='solid')
+
+
+def index_ids(ws, idc, start=2):
+    """Map ID -> row. Stops after a long run of empty rows (formatted-but-empty
+    sheets like DETAILED ITR LIST report max_row = 1048576)."""
+    rows_by_id = {}
+    empty = 0
+    for r in range(start, ws.max_row + 1):
+        rid = n(ws.cell(r, idc).value)
+        if rid:
+            rows_by_id[rid.upper()] = r
+            empty = 0
+        else:
+            empty += 1
+            if empty > 300:
+                break
+    return rows_by_id
 
 
 def main():
@@ -244,18 +280,16 @@ def run_once(force, state_file=None, target=None):
 
     # ---- detailed sheets -------------------------------------------------
     for psheet, (tgt, idh, cmap) in TARGET_SHEET.items():
-        if tgt not in wb.sheetnames:
+        has_edits = (cells.get(psheet) or notes.get(psheet)
+                     or colors.get(psheet))
+        if tgt not in wb.sheetnames or not has_edits:
             continue
         ws = wb[tgt]
         idc = header_index(ws, idh)
         if not idc:
             rep['no_col'].append(f'{tgt}: ID column {idh!r} missing')
             continue
-        rows_by_id = {}
-        for r in range(2, ws.max_row + 1):
-            rid = n(ws.cell(r, idc).value).upper()
-            if rid and rid not in rows_by_id:
-                rows_by_id[rid] = r
+        rows_by_id = index_ids(ws, idc)
         colmap = {}
         for pcol, etitle in cmap.items():
             ec = header_index(ws, etitle)
@@ -298,9 +332,10 @@ def run_once(force, state_file=None, target=None):
 
     # ---- RFC PROGRESS ----------------------------------------------------
     sh = 'RFC PROGRESS'
-    if sh in wb.sheetnames:
+    if sh in wb.sheetnames and (cells.get(sh) or notes.get(sh)
+                                or colors.get(sh)):
         ws = wb[sh]
-        ids = build_rfc_ids(ws)
+        ids = index_ids(ws, RFC_ID_COL, start=RFC_DATA_ROW)
         walk_c = None
         for c in range(56, ws.max_column + 1):
             if re.sub(r'\s+', ' ', n(ws.cell(3, c).value)).upper() == \
