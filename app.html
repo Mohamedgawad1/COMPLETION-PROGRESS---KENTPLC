@@ -246,11 +246,15 @@ function save(sh,id,patch){
   if(patch.col!==undefined){((st._e=st._e||{})[id]=st._e[id]||{})[patch.col]=patch.value;}
   localStorage.setItem(key,JSON.stringify(st));
  }catch(e){}
+ var _cl=window.PS5Sync&&PS5Sync.enabled();
+ if(_cl)PS5Sync.push(sh,id,patch);
+ if(!_cl){
  if(!ONLINE)return;
  fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json'},
   body:JSON.stringify(Object.assign({sheet:sh,id:id},patch))})
  .then(r=>{if(!r.ok)throw 0;$('syncbadge').classList.remove('off');$('syncbadge').innerHTML='● SYNCED TO EXCEL';})
  .catch(()=>{$('syncbadge').textContent='● OFFLINE - saved locally';$('syncbadge').classList.add('off');});
+ }
 }
 function fillSel(id){const s=$(id);s.innerHTML='<option value="">ALL SUB SYSTEMS</option>';
  SUBS.forEach((x,i)=>{const o=document.createElement('option');o.value=x.sid;o.textContent=x.name;s.appendChild(o);});}
@@ -677,5 +681,176 @@ var LIVE='https://insight-que-webcams-dare.trycloudflare.com/api/state';
 function push(sh,id,p){try{fetch(LIVE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({sheet:sh,id:id},p))}).catch(function(){});}catch(e){}}
 var n=0,tm=setInterval(function(){if(++n>60){clearInterval(tm);return;}if(typeof window.save==='function'){clearInterval(tm);var o=window.save;window.save=function(sh,id,p){try{o(sh,id,p);}catch(e){}push(sh,id,p);};}},250);
 })();
+</script>
+
+<script src="ps5_config.js"></script>
+<script>
+(function(){"use strict";
+var CFG=window.PS5CFG||{};
+var LS_KEY='ps5_cloud_cfg';
+function savedCfg(){try{return JSON.parse(localStorage.getItem(LS_KEY)||'null');}catch(e){return null;}}
+var SC=savedCfg()||{};
+var TOKEN=SC.token||CFG.TOKEN||'';
+var EP=SC.endpoint||CFG.ENDPOINT||'';
+var OWNER=CFG.OWNER||'Mohamedgawad1',REPO=CFG.REPO||'PS5-COMPLETION-PLATFORM',BR=CFG.BRANCH||'main',PATH=CFG.STATE_PATH||'platform_state.json';
+var GAPI='https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/'+PATH;
+var sha=null,timer=null,busy=false,dirty=false;
+var ST={cells:{},notes:{},colors:{}};
+function enabled(){return !!(TOKEN||EP);}
+function ghEnabled(){return !!(TOKEN&&OWNER&&REPO);}
+function badge(t,off){var b=document.getElementById('syncbadge');if(!b)return;if(off)b.classList.add('off');else b.classList.remove('off');b.textContent=t;}
+function b64e(s){var b=new TextEncoder().encode(s),bin='',i;for(i=0;i<b.length;i++)bin+=String.fromCharCode(b[i]);return btoa(bin);}
+function b64d(x){var bin=atob(String(x).replace(/\s/g,'')),b=new Uint8Array(bin.length),i;for(i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);return new TextDecoder('utf-8').decode(b);}
+function ghHdrs(){return {'Authorization':'token '+TOKEN,'Accept':'application/vnd.github+json'};}
+function cloudGet(cb){
+ if(EP){
+  var u=EP+(EP.indexOf('?')>=0?'&':'?')+'action=get&_='+Date.now();
+  fetch(u,{cache:'no-store'}).then(function(r){return r.json();})
+   .then(function(j){cb(null,(j&&j.state)||{},{sha:j&&j.sha||''});}).catch(function(e){cb(e);});
+  return;
+ }
+ var u=GAPI+'?ref='+encodeURIComponent(BR)+'&_='+Date.now();
+ fetch(u,{headers:ghHdrs(),cache:'no-store'}).then(function(r){
+  if(r.status===404){cb(null,{},null);return null;}
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.json().then(function(j){var st={};try{st=JSON.parse(b64d(j.content));}catch(e){}cb(null,st,j.sha);});
+ }).catch(function(e){cb(e);});
+}
+function deepMerge(dst,src){
+ ['cells','notes','colors'].forEach(function(k){
+  var s=src&&src[k];if(!s)return;
+  var d=dst[k]=dst[k]||{};
+  Object.keys(s).forEach(function(sh){
+   var row=s[sh],dd=d[sh]=d[sh]||{};
+   Object.keys(row).forEach(function(id){
+    var v=row[id];
+    if(v&&typeof v==='object'){var o=dd[id]=dd[id]||{};Object.keys(v).forEach(function(c){o[c]=v[c];});}
+    else dd[id]=v;
+   });
+  });
+ });
+}
+function lsToST(){
+ try{
+  for(var i=0;i<localStorage.length;i++){
+   var k=localStorage.key(i);if(String(k).indexOf('xstate_')!==0)continue;
+   var sh=k.slice(7),st;try{st=JSON.parse(localStorage.getItem(k)||'{}');}catch(e){continue;}
+   Object.keys(st).forEach(function(id){
+    var v=st[id];
+    if(id==='_c'){Object.keys(v).forEach(function(j){((ST.colors[sh]=ST.colors[sh]||{})[j])=v[j];});}
+    else if(id==='_e'){
+     Object.keys(v).forEach(function(id2){
+      var o=v[id2];
+      Object.keys(o).forEach(function(c){
+       var cc=(ST.cells[sh]=ST.cells[sh]||{});cc[id2]=cc[id2]||{};cc[id2][c]=o[c];
+      });
+     });
+    }
+    else{(ST.notes[sh]=ST.notes[sh]||{})[id]=v;}
+   });
+  }
+ }catch(e){}
+}
+function applyToPage(){
+ try{Object.keys(ST.notes).forEach(function(sh){var p=NOTES[sh]=(NOTES[sh]||{}),sn=ST.notes[sh];Object.keys(sn).forEach(function(id){p[id]=sn[id];});});}catch(e){}
+ try{Object.keys(ST.colors).forEach(function(sh){var p=PCOL[sh]=(PCOL[sh]||{}),sc=ST.colors[sh];Object.keys(sc).forEach(function(id){p[id]=sc[id];});});}catch(e){}
+ try{Object.keys(ST.cells).forEach(function(sh){var o=OVR[sh]=(OVR[sh]||{}),scl=ST.cells[sh];Object.keys(scl).forEach(function(id){var cc=scl[id],oo=o[id]=(o[id]||{});Object.keys(cc).forEach(function(col){oo[col]=cc[col];});});});}catch(e){}
+}
+function rerender(){
+ try{
+  if(typeof V==='undefined'||typeof RENDER==='undefined')return;
+  if(V==='dash'){if(typeof renderDash==='function')renderDash();}
+  else if(RENDER[V])RENDER[V]();
+ }catch(e){}
+}
+function epFlush(){
+ fetch(EP,{method:'POST',body:JSON.stringify({action:'save',state:ST})})
+ .then(function(r){if(!r.ok)throw 0;dirty=false;badge('\u25cf SYNCED \u2713 CLOUD');})
+ .catch(function(){badge('\u25cf OFFLINE - saved locally',true);});
+}
+function ghFlush(retried){
+ if(busy)return;
+ busy=true;badge('\u25cf SAVING\u2026');
+ var payload={message:'PS5 platform edits',content:b64e(JSON.stringify(ST)),branch:BR};
+ if(sha)payload.sha=sha;
+ fetch(GAPI,{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},ghHdrs()),body:JSON.stringify(payload)})
+ .then(function(r){return r.json().then(function(j){return {ok:r.ok,st:r.status,j:j};},function(){return {ok:false,st:r.status,j:{}};});})
+ .then(function(res){
+  if(res.ok){sha=(res.j&&res.j.content)?res.j.content.sha:sha;dirty=false;badge('\u25cf SYNCED \u2713 CLOUD');}
+  else{
+   if(!retried&&(res.st===409||res.st===422||(res.st===404&&sha))){
+    sha=null;
+    cloudGet(function(e,remote,newSha){
+     if(!e){deepMerge(ST,remote||{});applyToPage();rerender();}
+     sha=newSha||null;busy=false;ghFlush(true);
+    });
+    return;
+   }
+   badge('\u25cf OFFLINE - saved locally',true);
+  }
+  busy=false;
+ })
+ .catch(function(){badge('\u25cf OFFLINE - saved locally',true);busy=false;});
+}
+function flush(){
+ if(!enabled())return;
+ if(EP)epFlush();else ghFlush(false);
+}
+function push(sh,id,patch){
+ if(!enabled())return false;
+ dirty=true;
+ if(patch&&patch.note!==undefined){(ST.notes[sh]=ST.notes[sh]||{})[id]=patch.note;}
+ else if(patch&&patch.color!==undefined){(ST.colors[sh]=ST.colors[sh]||{})[id]=patch.color;}
+ else if(patch&&patch.col!==undefined){var cc=(ST.cells[sh]=ST.cells[sh]||{});cc[id]=cc[id]||{};cc[id][patch.col]=(patch.value===undefined?'':String(patch.value));}
+ clearTimeout(timer);timer=setTimeout(flush,3500);
+ return true;
+}
+function connect(){
+ var v=window.prompt(
+  '\u0627\u0631\u0628\u0637 \u0627\u0644\u0645\u0646\u0635\u0629 \u0628\u0627\u0644\u0633\u062d\u0627\u0628 \u0627\u0644\u0633\u062d\u0627\u0628\u0649:\n'+
+  '- \u0627\u0644\u0635\u0642 \u0631\u0627\u0628\u0637 Google Apps Script\n'+
+  '- \u0623\u0648 \u0627\u0644\u0635\u0642 GitHub TOKEN');
+ if(!v)return;
+ v=v.trim();
+ if(!v)return;
+ if(v.indexOf('http')===0){SC.endpoint=v;EP=v;TOKEN='';}
+ else{SC.token=v;TOKEN=v;EP='';}
+ try{localStorage.setItem(LS_KEY,JSON.stringify(SC));}catch(e){}
+ badge('\u25cf SYNCING\u2026');
+ boot();
+}
+function boot(){
+ lsToST();applyToPage();rerender();
+ if(!enabled()){badge('\u25cf LOCAL ONLY - click \u2601 to connect',false);return;}
+ badge('\u25cf SYNCING\u2026');
+ cloudGet(function(err,remote,newSha){
+  if(!err){deepMerge(ST,remote||{});applyToPage();rerender();sha=newSha||null;badge('\u25cf SYNCED \u2713 CLOUD');}
+  else{badge('\u25cf OFFLINE - saved locally',true);}
+ });
+}
+setInterval(function(){
+ if(busy||dirty||!enabled())return;
+ var ae=document.activeElement;
+ if(ae&&ae.classList&&(ae.classList.contains('edt')||ae.classList.contains('ni')))return;
+ cloudGet(function(err,remote,newSha){
+  if(!err&&(newSha===null||newSha)&&newSha!==sha){sha=newSha;deepMerge(ST,remote||{});applyToPage();rerender();}
+ });
+},120000);
+window.PS5Sync={push:push,enabled:enabled,flushNow:function(){clearTimeout(timer);flush(false);},connect:connect};
+boot();
+var sb=document.getElementById('svbtn');
+if(sb)sb.addEventListener('click',function(){if(!enabled())return;lsToST();setTimeout(function(){clearTimeout(timer);flush(false);},50);});
+var hdr=document.querySelector('header');
+if(hdr&&!document.getElementById('clbtn')){
+ var btn=document.createElement('button');
+ btn.id='clbtn';btn.type='button';
+ btn.innerHTML='\u2601';
+ btn.title='Connect cloud save / \u0631\u0628\u0637 \u0627\u0644\u0633\u062d\u0627\u0628 \u0627\u0644\u0633\u062d\u0627\u0628\u0649';
+ btn.style.cssText='width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:none;border-radius:50%;font-size:14px;cursor:pointer;margin-left:8px;background:linear-gradient(135deg,#27405c,#16283c);color:#7fd1ff;box-shadow:0 3px 10px -3px rgba(0,0,0,.6)';
+ btn.addEventListener('click',connect);
+ hdr.appendChild(btn);
+}
+})();
+
 </script>
 </body></html>
