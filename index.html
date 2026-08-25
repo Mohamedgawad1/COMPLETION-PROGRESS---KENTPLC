@@ -245,6 +245,18 @@ function softRerender(){var ae=document.activeElement;var memo=(ae&&ae.classList
    rg.collapse(false);var sl=getSelection();sl.removeAllRanges();sl.addRange(rg);
   }catch(e2){}}}}
 window.softRerender=softRerender;
+function rfcEff(x){var SH='RFC PROGRESS';var sT=0,sC=0,k2;
+ for(k2=0;k2<8;k2++){var t1=PFN(ovv(SH,x.sid,RFK[k2]+' TOTAL',x.d[k2].t)),
+  c1=PFN(ovv(SH,x.sid,RFK[k2]+' CLOSED',x.d[k2].c));
+  x.d[k2]={t:t1,c:c1};sT+=t1;sC+=c1;}
+ x.it=PFN(ovv(SH,x.sid,'ITRs',x.it));x.ic=PFN(ovv(SH,x.sid,'CLOSED',x.ic));
+ x.ib=x.it-x.ic;
+ x.b1=PFN(ovv(SH,x.sid,'CPP-1',x.b1));x.b2=PFN(ovv(SH,x.sid,'EIT',x.b2));
+ x.b3=PFN(ovv(SH,x.sid,'EACOP',x.b3));
+ var sv=ovv(SH,x.sid,'SIGNED',x.signed);
+ if(sv!==undefined&&sv!==null)x.signed=sv;
+ if(sT>0){x.tot=Math.round(sC/sT*100);x.itrp=Math.round(sC/sT*100);}
+ return x;}
 if(!navigator.onLine||location.protocol==='file:'){$('syncbadge').textContent='● OFFLINE - saved locally';$('syncbadge').classList.add('off');ONLINE=false;}
 function save(sh,id,patch){
  try{
@@ -354,21 +366,11 @@ function renderRfc(){
  hh+='<th>ITRs</th><th>CLOSED</th><th>BALANCE</th><th>ITR %</th><th>CPP-1</th><th>EIT</th><th>EACOP</th><th>EACOP</th><th>CPP-EIT</th><th>CPP-1</th><th>WALKDOWN STATUS</th><th style="width:26px">&#9873;</th><th style="min-width:170px">MY REMARKS</th></tr>';
  let rows='';
  for(const x of d){
-  let sT=0,sC=0;
-  for(let k2=0;k2<8;k2++){
-   const t1=PFN(ovv(SH,x.sid,RFK[k2]+' TOTAL',x.d[k2].t)),c1=PFN(ovv(SH,x.sid,RFK[k2]+' CLOSED',x.d[k2].c));
-   x.d[k2]={t:t1,c:c1};sT+=t1;sC+=c1;
-  }
-  x.it=PFN(ovv(SH,x.sid,'ITRs',x.it));x.ic=PFN(ovv(SH,x.sid,'CLOSED',x.ic));
-  x.ib=x.it-x.ic;
-  x.b1=PFN(ovv(SH,x.sid,'CPP-1',x.b1));x.b2=PFN(ovv(SH,x.sid,'EIT',x.b2));
-  x.b3=PFN(ovv(SH,x.sid,'EACOP',x.b3));
-  if(sT>0){x.tot=Math.round(sC/sT*100);x.itrp=Math.round(sC/sT*100);}
-  rows+='<tr data-id="'+esc(x.sid)+'" data-sh="'+SH+'">';
+  rfcEff(x);  rows+='<tr data-id="'+esc(x.sid)+'" data-sh="'+SH+'">';
   rows+='<td class="sublink" data-go="'+esc(x.sid)+'" style="white-space:normal;min-width:240px">'+esc(x.name)+'</td>';
   rows+=edt(SH,x.sid,'Priority',x.prio,'style="text-align:center;font-weight:700"');
   rows+=edt(SH,x.sid,'RFC BHMPS',x.bhm,'style="text-align:center"')+edt(SH,x.sid,'RFC EIT',x.eit,'style="text-align:center"')+edt(SH,x.sid,'Baseline',x.base,'style="text-align:center"')+edt(SH,x.sid,'Recovery',x.rec,'style="text-align:center"');
-  const scol=x.signed==='COMPLETE'?'color:#2e7d32':(x.signed==='PARTIAL'?'color:#ed7d31':'');
+  var sv2=x.signed||'';var scol=sv2.toUpperCase().indexOf('COMPLETE')>=0?'color:#2e7d32;font-weight:700':(sv2.toUpperCase().indexOf('PARTIAL')>=0?'color:#ed7d31;font-weight:700':'');
   rows+=edt(SH,x.sid,'SIGNED',x.signed||'-','style="text-align:center;font-weight:700;'+scol+'"');
   rows+=edt(SH,x.sid,'Milestone',x.mile);
   const tp=x.tot===''?null:x.tot;
@@ -464,7 +466,8 @@ function renderList(w){
 }
 function renderDone(){
  const SH='RFC PROGRESS';
- const d=RFC.filter(x=>(x.tot!==''&&x.tot>=100)||x.signed==='COMPLETE'||x.signed==='PARTIAL');
+ const d=RFC.map(function(x){return rfcEff(Object.assign({},x));})
+  .filter(x=>x.tot!==''&&x.tot>=100);
  const N=NOTES[SH]||{};
  let h='<tr><th>#</th><th>SUB SYSTEM</th><th>TOTAL %</th><th>MILESTONE</th><th>RFC SIGNED</th><th>WALKDOWN STATUS</th><th>MY REMARKS</th></tr>';
  let rows='';
@@ -474,7 +477,7 @@ function renderDone(){
   rows+='<td class="sublink" data-go="'+esc(x.sid)+'" style="white-space:normal;min-width:260px">'+esc(x.name)+'</td>';
   rows+='<td style="text-align:center;font-weight:700">'+(x.tot===''?'-':x.tot+'%')+'</td>';
   rows+=edt(SH,x.sid,'Milestone',x.mile);
-  const scol=x.signed==='COMPLETE'?'color:#2e7d32':(x.signed==='PARTIAL'?'color:#ed7d31':'');
+  var sv2=x.signed||'';var scol=sv2.toUpperCase().indexOf('COMPLETE')>=0?'color:#2e7d32;font-weight:700':(sv2.toUpperCase().indexOf('PARTIAL')>=0?'color:#ed7d31;font-weight:700':'');
   rows+=edt(SH,x.sid,'SIGNED',x.signed||'-','style="text-align:center;font-weight:700;'+scol+'"');
   rows+=edt(SH,x.sid,'STATUS',ovv(SH,x.sid,'STATUS',x.wd),'style="text-align:center"');
   rows+='<td><input class="ni" style="width:220px" placeholder="+ remark..." value="'+esc(N[x.sid]||'')+'"></td></tr>';
@@ -543,7 +546,7 @@ document.addEventListener('focusout',e=>{
  ((OVR[sh]=OVR[sh]||{})[id]=OVR[sh][id]||{})[col]=v;
  e.target.classList.add('saved');setTimeout(()=>e.target.classList.remove('saved'),1200);
  save(sh,id,{col:col,value:v});
- if(V==='rfc'||V==='sub')setTimeout(softRerender,40);
+ if(V==='rfc'||V==='sub'||V==='done')setTimeout(softRerender,40);
 });
 document.addEventListener('change',e=>{
  if(!e.target.classList.contains('ni'))return;
