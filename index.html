@@ -1009,7 +1009,12 @@ window._eitDetail=function(sid, row) {
   row.querySelector('td:last-child').textContent='▼ hide';
 };
 
-// Init when page shown
+// Init when page shown - patch show() to auto-init EIT
+var _origShow=show;
+show=function(v){
+  _origShow(v);
+  if(v==='eit')setTimeout(initEIT,50);
+};
 document.querySelector('[data-v="eit"]').addEventListener('click', function() {
   setTimeout(initEIT, 50);
 });
