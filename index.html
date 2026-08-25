@@ -272,7 +272,8 @@ function rfcEff(x){var SH='RFC PROGRESS';var sT=0,sC=0,k2;
  x.b3=PFN(ovv(SH,x.sid,'EACOP',x.b3));
  var sv=ovv(SH,x.sid,'SIGNED',x.signed);
  if(sv!==undefined&&sv!==null)x.signed=sv;
- if(sT>0){x.tot=Math.round(sC/sT*100);x.itrp=Math.round(sC/sT*100);}
+ if(sT>0)x.tot=Math.round(sC/sT*100);
+ x.itrp=x.it>0?Math.round(x.ic/x.it*100):(x.ic>0?100:0);
  return x;}
 if(!navigator.onLine||location.protocol==='file:'){$('syncbadge').textContent='● OFFLINE - saved locally';$('syncbadge').classList.add('off');ONLINE=false;}
 function save(sh,id,patch){
