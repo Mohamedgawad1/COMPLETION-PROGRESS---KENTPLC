@@ -28,6 +28,7 @@ import shutil
 import sys
 import time
 import urllib.request
+import zipfile
 
 import openpyxl
 from openpyxl.styles import Font, PatternFill
@@ -274,7 +275,12 @@ def run_once(force, state_file=None, target=None):
                           + ' -BACKUP.xlsx')
     shutil.copy2(src, backup)
 
-    wb = openpyxl.load_workbook(src)
+    try:
+        wb = openpyxl.load_workbook(src)
+    except Exception as e:
+        print(f'[sync] cannot open "{os.path.basename(src)}" ({e}) - '
+              f'close Excel / check the file. NOTHING was changed.')
+        return
     rep = {'written': 0, 'notes': 0, 'colors': 0, 'skipped_formula': [],
            'skipped_derived': [], 'no_row': [], 'no_col': []}
 
@@ -297,7 +303,7 @@ def run_once(force, state_file=None, target=None):
                 colmap[pcol] = ec
             else:
                 rep['no_col'].append(f'{tgt}: {etitle!r} missing')
-        note_c = ensure_note_col(ws)
+        note_c = ensure_note_col(ws) if notes.get(psheet) else None
 
         for rid, ed in (cells.get(psheet, {}) or {}).items():
             r = rows_by_id.get(n(rid).upper())
@@ -335,16 +341,25 @@ def run_once(force, state_file=None, target=None):
     if sh in wb.sheetnames and (cells.get(sh) or notes.get(sh)
                                 or colors.get(sh)):
         ws = wb[sh]
-        ids = index_ids(ws, RFC_ID_COL, start=RFC_DATA_ROW)
-        walk_c = None
-        for c in range(56, ws.max_column + 1):
-            if re.sub(r'\s+', ' ', n(ws.cell(3, c).value)).upper() == \
-                    'WALKDOWN STATUS':
-                walk_c = c
-                break
-        if walk_c is None:
-            walk_c = max(ws.max_column, 55) + 1
-            ws.cell(3, walk_c).value = 'WALKDOWN STATUS'
+        # platform sid = text before ' - ' in column A
+        ids = {k.split(' - ')[0].strip(): v
+               for k, v in index_ids(ws, RFC_ID_COL,
+                                     start=RFC_DATA_ROW).items()}
+        walk_holder = [None]
+
+        def get_walk():
+            if walk_holder[0] is None:
+                c = None
+                for cc in range(56, ws.max_column + 1):
+                    if re.sub(r'\s+', ' ', n(ws.cell(3, cc).value)).upper() \
+                            == 'WALKDOWN STATUS':
+                        c = cc
+                        break
+                if c is None:
+                    c = max(ws.max_column, 55) + 1
+                    ws.cell(3, c).value = 'WALKDOWN STATUS'
+                walk_holder[0] = c
+            return walk_holder[0]
 
         def put(r, cidx, val):
             cell = ws.cell(r, cidx)
@@ -368,7 +383,9 @@ def run_once(force, state_file=None, target=None):
                 elif pcol in RFC_DERIVED:
                     rep['skipped_derived'].append(f'{sh}:{pcol} ({rid})')
                 elif pcol in RFC_MAP:
-                    cidx = RFC_MAP[pcol] or walk_c
+                    cidx = RFC_MAP[pcol]
+                    if cidx is None:
+                        cidx = get_walk()
                     put(r, cidx, val)
                 else:
                     rep['no_col'].append(f'{sh}: {pcol} unmapped')
@@ -387,11 +404,19 @@ def run_once(force, state_file=None, target=None):
                 apply_fill(ws, r, 1, col)
                 rep['colors'] += 1
 
-    # ---- save with lock-retry --------------------------------------------
+    # ---- nothing changed? do not touch the workbook at all ---------------
+    if not (rep['written'] or rep['notes'] or rep['colors']):
+        wb.close()
+        save_seen(h) if not state_file else None
+        print('[sync] no effective changes - workbook untouched')
+        return
+
+    # ---- atomic save: tmp file -> validate -> replace --------------------
+    tmpf = src + '.saving.tmp'
     ok = False
     for attempt in range(15):
         try:
-            wb.save(src)
+            wb.save(tmpf)
             ok = True
             break
         except PermissionError:
@@ -400,9 +425,24 @@ def run_once(force, state_file=None, target=None):
             time.sleep(2)
     wb.close()
     if not ok:
-        shutil.copy2(backup, src)
-        print('[sync] file locked - backup restored, nothing changed')
+        if os.path.exists(tmpf):
+            os.remove(tmpf)
+        print('[sync] file locked - nothing changed, try again later')
         return
+    try:
+        _z = zipfile.ZipFile(tmpf)
+        _bad = _z.testzip()
+        _n = len(_z.namelist())
+        _z.close()
+        if _bad is not None or _n < 10:
+            raise RuntimeError(f'invalid archive ({_n} entries)')
+    except Exception as e:
+        if os.path.exists(tmpf):
+            os.remove(tmpf)
+        print(f'[sync] post-save validation FAILED ({e}) - '
+              f'original file untouched')
+        return
+    os.replace(tmpf, src)
 
     save_seen(h) if not state_file else None
     lines = [
