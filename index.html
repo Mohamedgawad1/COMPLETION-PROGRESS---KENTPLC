@@ -926,19 +926,23 @@ function initEIT() {
   if(!tb) return;
 
   let html='<thead><tr><th>#</th><th>Subsystem</th><th>Cables</th>'
-    +'<th>Assets</th><th>ITRs Closed</th><th>ITR %</th><th></th></tr></thead><tbody>';
+    +'<th>Assets</th><th>ITRs Closed</th><th>ITR %</th><th style="min-width:90px">Links</th></tr></thead><tbody>';
   SUBS.forEach((s,i) => {
     const disc=getDisc(s.sid);
     const col=DISC_COLOR[disc]||'#333';
     html+='<tr data-sid="'+s.sid+'" style="cursor:pointer" '
       +'onclick="window._eitDetail(\''+s.sid+'\',this)">'
       +'<td>'+(i+1)+'</td>'
-      +'<td style="color:'+col+';font-weight:600">'+s.name+'</td>'
+      +'<td class="sublink" data-go="'+s.sid+'" style="color:'+col+';font-weight:600">'+s.name+'</td>'
       +'<td style="text-align:right;font-weight:600">'+s.cables+'</td>'
       +'<td style="text-align:right">'+s.assets+'</td>'
       +'<td style="text-align:right">'+s.itrs_closed+'/'+s.itrs_total+'</td>'
       +'<td style="text-align:right">'+s.itr_pct+'</td>'
-      +'<td style="color:#1565c0;font-size:11px">▶ cables</td>'
+      +'<td style="white-space:nowrap;font-size:11px">'
+      +'<span class="sublink" data-go="'+s.sid+'" style="color:#1565c0;cursor:pointer" title="Go to Subsystem page">SUB</span> &middot; '
+      +'<span onclick="event.stopPropagation();show(\'rfc\');setTimeout(function(){var q=document.getElementById(\'q-rfc\');if(q){q.value=\''+s.sid+'\';q.dispatchEvent(new Event(\'input\'))}},80)" '
+      +'style="color:#e65100;cursor:pointer" title="Go to RFC Progress">RFC</span>'
+      +'</td>'
       +'</tr>';
   });
   html+='</tbody>';
@@ -979,8 +983,13 @@ window._eitDetail=function(sid, row) {
   const td=document.createElement('td');
   td.colSpan=7;
   td.style.cssText='padding:8px 12px;background:#f5f7fa;border-top:2px solid #1565c0';
-  let h='<div style="font-weight:600;color:#1565c0;margin-bottom:6px">'
-    +sid+' &mdash; '+cables.length+' cables</div>';
+  let h='<div style="font-weight:600;color:#1565c0;margin-bottom:6px;display:flex;align-items:center;gap:12px">'
+    +'<span class="sublink" data-go="'+sid+'" style="cursor:pointer;text-decoration:underline">'+sid+'</span>'
+    +'<span>&mdash; '+cables.length+' cables</span>'
+    +'<span class="sublink" data-go="'+sid+'" style="color:#1565c0;font-size:11px;cursor:pointer">[Open Subsystem]</span>'
+    +'<span onclick="show(\'rfc\');setTimeout(function(){var q=document.getElementById(\'q-rfc\');if(q){q.value=\''+sid+'\';q.dispatchEvent(new Event(\'input\'))}},80)" '
+    +'style="color:#e65100;font-size:11px;cursor:pointer">[Open RFC]</span>'
+    +'</div>';
   h+='<table style="width:100%;font-size:12px;border-collapse:collapse">';
   h+='<tr style="background:#e3f2fd"><th style="padding:4px 8px;text-align:left">#</th>'
     +'<th style="padding:4px 8px;text-align:left">Asset Tag</th>'
