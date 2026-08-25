@@ -996,13 +996,11 @@ window._eitDetail=function(sid, row) {
     +'<th style="padding:4px 8px;text-align:left">From Equipment</th>'
     +'<th style="padding:4px 8px;text-align:left">To Equipment</th></tr>';
   cables.forEach((c,i) => {
-    const fr=c.from_desc||c.from||'';
-    const to=c.to_desc||c.to||'';
     h+='<tr style="border-bottom:1px solid #e0e0e0">'
       +'<td style="padding:3px 8px">'+(i+1)+'</td>'
       +'<td style="padding:3px 8px;font-family:monospace;font-size:11px">'+(c.tag||c.asset||'')+'</td>'
-      +'<td style="padding:3px 8px;font-size:11px">'+fr+'</td>'
-      +'<td style="padding:3px 8px;font-size:11px">'+to+'</td></tr>';
+      +'<td style="padding:3px 8px;font-size:11px">'+c.from+'</td>'
+      +'<td style="padding:3px 8px;font-size:11px">'+c.to+'</td></tr>';
   });
   h+='</table>';
   td.innerHTML=h;
