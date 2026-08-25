@@ -353,7 +353,7 @@ function subRows(src,isP){
 }
 function renderSub(){
  const x=RFC.find(r=>r.sid===SUBCUR)||{name:SUBCUR};
-  $('sub-name').innerHTML='<span class="sidchip">'+esc(SUBCUR||'-')+'</span>'+esc(x.name||'SELECT A SUBSYSTEM');
+ $('sub-name').innerHTML='<span class="sidchip">'+esc(SUBCUR||'-')+'</span>'+esc(x.name||'SELECT A SUBSYSTEM');
  const P=PUNCH.filter(r=>r[9]===SUBCUR);
  const I=ITR.filter(r=>r[9]===SUBCUR);
  const pc=P.filter(r=>ovv('PUNCH LIST',r[0],'STATUS',r[5])==='Closed').length;
@@ -1035,7 +1035,7 @@ show=function(v){
   _origShow(v);
   if(v==='eit')setTimeout(initEIT,50);
 };
-function goEit(sid){
+window.goEit=function(sid){
   show('eit');
   setTimeout(function(){
     initEIT();
@@ -1048,7 +1048,7 @@ function goEit(sid){
       setTimeout(function(){row.click()},150);
     }
   },80);
-}
+};
 document.querySelector('[data-v="eit"]').addEventListener('click', function() {
   setTimeout(initEIT, 50);
 });
