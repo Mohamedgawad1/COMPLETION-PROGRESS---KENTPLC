@@ -1,0 +1,395 @@
+# -*- coding: utf-8 -*-
+"""
+PS5 - Sync platform edits (GitHub Pages) -> PS-5 COMPLETIONS DPR SUMMERY Excel.
+
+Pulls https://mohamedgawad1.github.io/PS5-COMPLETION-PLATFORM/platform_state.json
+and applies every platform edit to the DPR SUMMERY workbook with EXACT mapping:
+
+  PUNCH LIST -> sheet 'DETAILED PUNCH LIST'  (id col 'Punchlist ID')
+  ITR LIST   -> sheet 'DETAILED ITR LIST'    (id col 'Task ID')
+  RFC PROGRESS -> sheet 'RFC PROGRESS'       (id = text before ' - ' in col A,
+                                              data starts row 4)
+
+Column map is fixed below (platform name -> exact Excel header). Nothing is
+written into formula cells (BALANCE / % / ITRs / CLOSED totals are formulas and
+recalculate automatically). Notes go to a 'PLATFORM NOTES' column that is
+created at the far right if missing. Row colors become the fill of the ID cell.
+
+Usage:
+  python sync_cloud_to_excel.py            # one shot
+  python sync_cloud_to_excel.py --watch    # repeat every 5 minutes
+  python sync_cloud_to_excel.py --force    # re-apply even if state unchanged
+"""
+import hashlib
+import json
+import os
+import re
+import shutil
+import sys
+import time
+import urllib.request
+
+import openpyxl
+from openpyxl.styles import Font, PatternFill
+
+HOME = os.path.join(os.path.expanduser('~'), 'Downloads')
+DL_SUB = os.path.join(HOME, 'PS5 - CPP AGI Completion Progress Dashboard_files')
+HERE = os.path.dirname(os.path.abspath(__file__))
+
+STATE_URL = ('https://raw.githubusercontent.com/Mohamedgawad1/'
+             'PS5-COMPLETION-PLATFORM/main/platform_state.json')
+SEEN_FILE = os.path.join(HERE, '_platform_sync_seen.json')
+REPORT_FILE = os.path.join(HERE, '_platform_sync_report.txt')
+
+# ---------------------------------------------------------------- mapping --
+# platform column  -> exact Excel header text
+PUNCH_MAP = {
+    'TAG': 'Asset (Name/Tag)',
+    'CAT': 'CAT',
+    'DISC': 'Discipline (Name)',
+    'DESCRIPTION': 'Description',
+    'STATUS': 'Status',
+    'CLOSING DATE': 'Workflow - Closing Date',
+}
+ITR_MAP = {
+    'TAG': 'Asset - Tag',
+    'DISC': 'Discipline',
+    'TASK TYPE': 'Task Type (Name)',
+    'ASSET DESCRIPTION': 'Asset - Description',
+    'STATE': 'Task State',
+    'CLOSING DATE': 'Closing Date',
+}
+# RFC PROGRESS sheet: positional (1-based) columns, verified against the file
+RFC_ID_COL = 1          # 'PS5-01-01 - description'
+RFC_DATA_ROW = 4        # first data row
+RFC_MAP = {
+    'Priority': 2,
+    'RFC BHMPS': 3,
+    'RFC EIT': 4,
+    'Baseline': 5,
+    'Recovery': 6,
+    'SIGNED': 7,
+    'Milestone': 8,
+    'CPP-1': 50,
+    'EIT': 51,
+    'EACOP': 52,
+    'REMARK EACOP': 53,
+    'REMARK CPP-EIT': 54,
+    'REMARK CPP-1': 55,
+    'STATUS': None,      # resolved dynamically -> 'WALKDOWN STATUS' column
+}
+# discipline letter -> (TOTAL col, CLOSED col)
+RFC_DISC_COLS = {'B': (10, 11), 'E': (14, 15), 'H': (18, 19), 'I': (22, 23),
+                 'M': (26, 27), 'P': (30, 31), 'S': (34, 35), 'T': (38, 39)}
+# platform columns that are derived in Excel (formulas) - never written
+RFC_DERIVED = {'ITRs', 'CLOSED', 'BALANCE'}
+
+NOTE_HEADER = 'PLATFORM NOTES'
+TARGET_SHEET = {
+    'PUNCH LIST': ('DETAILED PUNCH LIST', 'Punchlist ID', PUNCH_MAP),
+    'ITR LIST': ('DETAILED ITR LIST', 'Task ID', ITR_MAP),
+}
+
+
+def n(v):
+    return '' if v is None else str(v).strip()
+
+
+def fetch_state(path=None):
+    if path:
+        try:
+            with open(path, encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f'[cloud] state file read failed: {e}')
+            return None
+    try:
+        req = urllib.request.Request(STATE_URL, headers={'User-Agent': 'ps5-sync'})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return json.loads(r.read().decode('utf-8'))
+    except Exception as e:
+        print(f'[cloud] download failed: {e}')
+        return None
+
+
+def load_seen():
+    try:
+        with open(SEEN_FILE, encoding='utf-8') as f:
+            return json.load(f).get('hash')
+    except Exception:
+        return None
+
+
+def save_seen(h):
+    with open(SEEN_FILE, 'w', encoding='utf-8') as f:
+        json.dump({'hash': h, 'time': time.strftime('%Y-%m-%d %H:%M:%S')}, f)
+
+
+def find_target():
+    cands = []
+    seen = set()
+    for folder in (HOME, DL_SUB):
+        if not os.path.isdir(folder):
+            continue
+        for f in os.listdir(folder):
+            b = f.upper()
+            if ('DPR SUMMERY' not in b or not f.lower().endswith('.xlsx')
+                    or f.startswith('~$') or 'BACKUP' in b):
+                continue
+            p = os.path.join(folder, f)
+            key = os.path.realpath(p)
+            if key in seen:
+                continue
+            seen.add(key)
+            cands.append((os.path.getmtime(p), p))
+    return max(cands)[1] if cands else None
+
+
+def header_index(ws, title):
+    """Exact (case/space-insensitive) header lookup in row 1."""
+    want = re.sub(r'\s+', ' ', n(title)).upper()
+    for c in range(1, ws.max_column + 1):
+        if re.sub(r'\s+', ' ', n(ws.cell(1, c).value)).upper() == want:
+            return c
+    return None
+
+
+def ensure_note_col(ws):
+    c = header_index(ws, NOTE_HEADER)
+    if c:
+        return c
+    c = ws.max_column + 1
+    ws.cell(1, c).value = NOTE_HEADER
+    return c
+
+
+def is_formula(cell):
+    v = cell.value
+    if isinstance(v, str) and v.startswith('='):
+        return True
+    return type(v).__name__ == 'ArrayFormula'
+
+
+def build_rfc_ids(ws):
+    ids = {}
+    for r in range(RFC_DATA_ROW, ws.max_row + 1):
+        raw = n(ws.cell(r, RFC_ID_COL).value)
+        if not raw:
+            continue
+        sid = raw.split(' - ')[0].strip().upper()
+        if sid and sid not in ids:
+            ids[sid] = r
+    return ids
+
+
+def apply_fill(ws, row, col, color):
+    cell = ws.cell(row, col)
+    if color:
+        argb = color if len(color) == 8 else 'FF' + color.lstrip('#')
+        cell.fill = PatternFill(start_color=argb, end_color=argb,
+                                fill_type='solid')
+
+
+def main():
+    args = sys.argv[1:]
+    force = '--force' in args
+    watch = '--watch' in args
+    state_file = None
+    target = None
+    if '--state' in args:
+        state_file = args[args.index('--state') + 1]
+    if '--target' in args:
+        target = args[args.index('--target') + 1]
+    while True:
+        try:
+            run_once(force, state_file, target)
+        except Exception as e:
+            print('[sync] error:', e)
+        if not watch:
+            return 0
+        time.sleep(300)
+
+
+def run_once(force, state_file=None, target=None):
+    global SEEN_FILE
+    st = fetch_state(state_file)
+    if st is None:
+        return
+    if state_file:
+        force = True
+    blob = json.dumps(st, sort_keys=True, ensure_ascii=False)
+    h = hashlib.sha256(blob.encode()).hexdigest()
+    if h == load_seen() and not force:
+        print('[sync] cloud state unchanged - nothing to do')
+        return
+
+    src = target or find_target()
+    if not src:
+        print('[sync] no DPR SUMMERY workbook found!')
+        return
+    print(f'[sync] target : {os.path.basename(src)}')
+
+    cells = st.get('cells', {}) or {}
+    notes = st.get('notes', {}) or {}
+    colors = st.get('colors', {}) or {}
+
+    backup = os.path.join(os.path.dirname(src),
+                          os.path.splitext(os.path.basename(src))[0]
+                          + ' -BACKUP.xlsx')
+    shutil.copy2(src, backup)
+
+    wb = openpyxl.load_workbook(src)
+    rep = {'written': 0, 'notes': 0, 'colors': 0, 'skipped_formula': [],
+           'skipped_derived': [], 'no_row': [], 'no_col': []}
+
+    # ---- detailed sheets -------------------------------------------------
+    for psheet, (tgt, idh, cmap) in TARGET_SHEET.items():
+        if tgt not in wb.sheetnames:
+            continue
+        ws = wb[tgt]
+        idc = header_index(ws, idh)
+        if not idc:
+            rep['no_col'].append(f'{tgt}: ID column {idh!r} missing')
+            continue
+        rows_by_id = {}
+        for r in range(2, ws.max_row + 1):
+            rid = n(ws.cell(r, idc).value).upper()
+            if rid and rid not in rows_by_id:
+                rows_by_id[rid] = r
+        colmap = {}
+        for pcol, etitle in cmap.items():
+            ec = header_index(ws, etitle)
+            if ec:
+                colmap[pcol] = ec
+            else:
+                rep['no_col'].append(f'{tgt}: {etitle!r} missing')
+        note_c = ensure_note_col(ws)
+
+        for rid, ed in (cells.get(psheet, {}) or {}).items():
+            r = rows_by_id.get(n(rid).upper())
+            if not r:
+                rep['no_row'].append(f'{psheet}/{rid}')
+                continue
+            for pcol, val in ed.items():
+                ec = colmap.get(pcol)
+                if not ec:
+                    rep['no_col'].append(f'{psheet}: {pcol} unmapped')
+                    continue
+                cell = ws.cell(r, ec)
+                if is_formula(cell):
+                    rep['skipped_formula'].append(f'{tgt}!{cell.coordinate}')
+                    continue
+                cell.value = val
+                cell.font = Font(size=9)
+                rep['written'] += 1
+        for rid, val in (notes.get(psheet, {}) or {}).items():
+            r = rows_by_id.get(n(rid).upper())
+            if not r:
+                rep['no_row'].append(f'{psheet}-note/{rid}')
+                continue
+            ws.cell(r, note_c).value = val
+            ws.cell(r, note_c).font = Font(size=9)
+            rep['notes'] += 1
+        for rid, col in (colors.get(psheet, {}) or {}).items():
+            r = rows_by_id.get(n(rid).upper())
+            if r:
+                apply_fill(ws, r, 1, col)
+                rep['colors'] += 1
+
+    # ---- RFC PROGRESS ----------------------------------------------------
+    sh = 'RFC PROGRESS'
+    if sh in wb.sheetnames:
+        ws = wb[sh]
+        ids = build_rfc_ids(ws)
+        walk_c = None
+        for c in range(56, ws.max_column + 1):
+            if re.sub(r'\s+', ' ', n(ws.cell(3, c).value)).upper() == \
+                    'WALKDOWN STATUS':
+                walk_c = c
+                break
+        if walk_c is None:
+            walk_c = max(ws.max_column, 55) + 1
+            ws.cell(3, walk_c).value = 'WALKDOWN STATUS'
+
+        def put(r, cidx, val):
+            cell = ws.cell(r, cidx)
+            if is_formula(cell):
+                rep['skipped_formula'].append(f'{sh}!{cell.coordinate}')
+                return
+            cell.value = val
+            cell.font = Font(size=9)
+            rep['written'] += 1
+
+        for rid, ed in (cells.get(sh, {}) or {}).items():
+            r = ids.get(n(rid).upper())
+            if not r:
+                rep['no_row'].append(f'{sh}/{rid}')
+                continue
+            for pcol, val in ed.items():
+                mkey = re.match(r'^([A-T]) (TOTAL|CLOSED)$', pcol)
+                if mkey and mkey.group(1) in RFC_DISC_COLS:
+                    tc, cc = RFC_DISC_COLS[mkey.group(1)]
+                    put(r, tc if mkey.group(2) == 'TOTAL' else cc, val)
+                elif pcol in RFC_DERIVED:
+                    rep['skipped_derived'].append(f'{sh}:{pcol} ({rid})')
+                elif pcol in RFC_MAP:
+                    cidx = RFC_MAP[pcol] or walk_c
+                    put(r, cidx, val)
+                else:
+                    rep['no_col'].append(f'{sh}: {pcol} unmapped')
+        for rid, val in (notes.get(sh, {}) or {}).items():
+            r = ids.get(n(rid).upper())
+            if not r:
+                rep['no_row'].append(f'{sh}-note/{rid}')
+                continue
+            nc = ensure_note_col(ws)
+            ws.cell(r, nc).value = val
+            ws.cell(r, nc).font = Font(size=9)
+            rep['notes'] += 1
+        for rid, col in (colors.get(sh, {}) or {}).items():
+            r = ids.get(n(rid).upper())
+            if r:
+                apply_fill(ws, r, 1, col)
+                rep['colors'] += 1
+
+    # ---- save with lock-retry --------------------------------------------
+    ok = False
+    for attempt in range(15):
+        try:
+            wb.save(src)
+            ok = True
+            break
+        except PermissionError:
+            print(f'[wait] close "{os.path.basename(src)}" in Excel '
+                  f'({attempt + 1}/15)...')
+            time.sleep(2)
+    wb.close()
+    if not ok:
+        shutil.copy2(backup, src)
+        print('[sync] file locked - backup restored, nothing changed')
+        return
+
+    save_seen(h) if not state_file else None
+    lines = [
+        f"sync {time.strftime('%Y-%m-%d %H:%M:%S')} -> {os.path.basename(src)}",
+        f"written={rep['written']} notes={rep['notes']} "
+        f"colors={rep['colors']}"]
+    if rep['skipped_derived']:
+        lines.append('derived(auto in Excel, not written): '
+                     + ', '.join(rep['skipped_derived'][:20]))
+    if rep['skipped_formula']:
+        lines.append('formula cells protected: '
+                     + ', '.join(rep['skipped_formula'][:20]))
+    if rep['no_row']:
+        lines.append('rows NOT found: ' + ', '.join(rep['no_row'][:30]))
+    if rep['no_col']:
+        lines.append('columns missing/unmapped: '
+                     + ', '.join(sorted(set(rep['no_col']))[:20]))
+    text = '\n'.join(lines)
+    print(text)
+    with open(REPORT_FILE, 'w', encoding='utf-8') as f:
+        f.write(text + '\n')
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
