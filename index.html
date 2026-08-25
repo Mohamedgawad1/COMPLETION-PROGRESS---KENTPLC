@@ -382,7 +382,7 @@ function renderRfc(){
  let rows='';
  for(const x of d){
   rfcEff(x);  rows+='<tr data-id="'+esc(x.sid)+'" data-sh="'+SH+'">';
-  rows+='<td class="sublink" data-go="'+esc(x.sid)+'" style="white-space:normal;min-width:240px">'+esc(x.name)+'</td>';
+  rows+='<td class="sublink" data-go="'+esc(x.sid)+'" style="white-space:normal;min-width:240px">'+esc(x.name)+' <span onclick="event.stopPropagation();show(\'eit\');setTimeout(function(){var q=document.getElementById(\'eit-search\');if(q){q.value=\''+esc(x.sid)+'\';q.dispatchEvent(new Event(\'input\'))}},100)" style="color:#1565c0;font-size:10px;cursor:pointer;border:1px solid #1565c0;border-radius:3px;padding:0 4px;margin-left:4px">CABLES</span></td>';
   rows+=edt(SH,x.sid,'Priority',x.prio,'style="text-align:center;font-weight:700"');
   rows+=edt(SH,x.sid,'RFC BHMPS',x.bhm,'style="text-align:center"')+edt(SH,x.sid,'RFC EIT',x.eit,'style="text-align:center"')+edt(SH,x.sid,'Baseline',x.base,'style="text-align:center"')+edt(SH,x.sid,'Recovery',x.rec,'style="text-align:center"');
   var sv2=x.signed||'';var scol=sv2.toUpperCase().indexOf('COMPLETE')>=0?'color:#2e7d32;font-weight:700':(sv2.toUpperCase().indexOf('PARTIAL')>=0?'color:#ed7d31;font-weight:700':'');
@@ -993,14 +993,16 @@ window._eitDetail=function(sid, row) {
   h+='<table style="width:100%;font-size:12px;border-collapse:collapse">';
   h+='<tr style="background:#e3f2fd"><th style="padding:4px 8px;text-align:left">#</th>'
     +'<th style="padding:4px 8px;text-align:left">Asset Tag</th>'
+    +'<th style="padding:4px 8px;text-align:left">Size</th>'
+    +'<th style="padding:4px 8px;text-align:left">Cores</th>'
     +'<th style="padding:4px 8px;text-align:left">From</th>'
     +'<th style="padding:4px 8px;text-align:left">To</th></tr>';
   cables.forEach((c,i) => {
     h+='<tr style="border-bottom:1px solid #e0e0e0">'
       +'<td style="padding:3px 8px">'+(i+1)+'</td>'
-      +'<td style="padding:3px 8px;font-family:monospace">'+c.asset+'</td>'
-      +'<td style="padding:3px 8px">'+c.from+'</td>'
-      +'<td style="padding:3px 8px">'+c.to+'</td></tr>';
+      +'<td style="padding:3px 8px;font-family:monospace;font-size:11px">'+(c.tag||c.asset||'')+'</td>'
+      +'<td style="padding:3px 8px;font-size:11px">'+c.from+'</td>'
+      +'<td style="padding:3px 8px;font-size:11px">'+c.to+'</td></tr>';
   });
   h+='</table>';
   td.innerHTML=h;
