@@ -152,6 +152,7 @@ header,#wrap,.flow,footer{position:relative;z-index:1}
  <button class="step" data-v="sub">6 &middot; SUBSYSTEM</button>
  <button class="step" data-v="done">7 &middot; COMPLETE &#10003;</button>
  <button class="step" data-v="cables">8 &middot; EIT CABLES</button>
+ <button class="step" data-v="eit9">9 &middot; ITR OPEN E/I/T</button>
 </div>
 
 <section class="view on" id="v-dash">
@@ -234,7 +235,17 @@ header,#wrap,.flow,footer{position:relative;z-index:1}
   </div>
   <div class="tblwrap"><table id="t-cab"></table></div><div class="hint" id="h-cab"></div>
  </div>
-</section>
+ </section>
+ <section class="view" id="v-eit9">
+  <div class="hero" id="eit9-hero">
+   <h2>ITR OPEN &mdash; E / I / T (CPP AGI)</h2>
+   <div id="eit9-kpis"></div>
+  </div>
+  <div class="panel">
+   <h2>Open ITR Tasks</h2>
+   <div class="tblwrap"><table id="t-eit9"></table></div><div class="hint" id="h-eit9"></div>
+  </div>
+ </section>
 
 <footer>PS5 &middot; CPP-AGI COMPLETION PLATFORM &mdash; CONFIDENTIAL &middot; FOR INTERNAL PROJECT USE ONLY</footer>
 <script>
@@ -369,6 +380,7 @@ function renderSub(){
    +'</div>'
    +'<div style="margin-top:10px">TOTAL %: <b>'+(x.tot===''?'-':x.tot+'%')+'</b> &nbsp;|&nbsp; RFC SIGNED: <b>'+esc(x.signed||'-')+'</b>'
    +(CABLES.some(c=>c[0]===SUBCUR)?' &nbsp;|&nbsp; <a href="#" onclick="showCablesForSub(\''+esc(SUBCUR)+'\');return false" style="color:#1a5276;font-weight:700;text-decoration:underline;cursor:pointer">CABLES ('+CABLES.filter(c=>c[0]===SUBCUR).length+')</a>':'')
+   +' &nbsp;|&nbsp; <a href="#" onclick="show(\'eit9\');return false" style="color:#1a5276;font-weight:700;text-decoration:underline;cursor:pointer">ITR OPEN E/I/T</a>'
    +'</div>';
  const ph='<tr><th>ID</th><th>TAG</th><th>CAT</th><th>DISC</th><th>DESCRIPTION</th><th>STATUS</th><th>CLOSE</th><th style="width:26px">&#9873;</th><th style="min-width:150px">NOTES</th></tr>';
  const ih='<tr><th>ID</th><th>TAG</th><th>DISC</th><th>DESCRIPTION</th><th>STATE</th><th>CLOSE</th><th style="width:26px">&#9873;</th><th style="min-width:150px">NOTES</th></tr>';
@@ -543,7 +555,43 @@ function renderCables(){
  $('t-cab').innerHTML='<thead>'+h+'</thead><tbody>'+(rows||emptyRow())+'</tbody>';
  $('h-cab').textContent=d.length+(trunc?' (first '+LIMIT+' shown)':'')+' cables'+(sid?' | subsystem: '+sid:'')+(disc?' | discipline: '+disc:'');
 }
-const RENDER={dash:null,rfc:renderRfc,blk:renderBlk,pu:()=>renderList('pu'),it:()=>renderList('it'),sub:renderSub,done:renderDone,cables:renderCables};
+function renderEit9(){
+ if(!SUBCUR){$('t-eit9').innerHTML='<tr><td colspan="8"><div class="empty">Select a subsystem first from page 6</div></td></tr>';return;}
+ const x=RFC.find(r=>r.sid===SUBCUR)||{name:SUBCUR};
+ $('eit9-hero').querySelector('h2').innerHTML='ITR OPEN &mdash; E / I / T (CPP AGI) &mdash; <span class="sidchip">'+esc(SUBCUR)+'</span>'+esc(x.name||'');
+ const I=ITR.filter(r=>r[9]===SUBCUR&&['Electrical','Instrumentation','Telecom'].includes(r[2])&&r[7]==='CPP AGI');
+ const open=I.filter(r=>!doneI(r[5]));
+ const closed=I.filter(r=>doneI(r[5]));
+ const byDisc={};
+ open.forEach(r=>{const d=r[2];if(!byDisc[d])byDisc[d]={open:0,closed:0};byDisc[d].open++;});
+ closed.forEach(r=>{const d=r[2];if(!byDisc[d])byDisc[d]={open:0,closed:0};byDisc[d].closed++;});
+ const colors={Electrical:'#1a5276',Instrumentation:'#b9770e',Telecom:'#1b4f72'};
+ let khtml='';
+ ['Electrical','Instrumentation','Telecom'].forEach(d=>{
+  const b=byDisc[d]||{open:0,closed:0};
+  const tot=b.open+b.closed;const pct=tot?Math.round(b.closed/tot*100):0;
+  khtml+='<div class="stat" style="background:'+colors[d]+'"><h4>'+d.charAt(0)+' - '+d.toUpperCase()+' (CPP AGI)</h4>'
+   +'<div class="v">'+pct+'% <small>CLOSED</small><span class="sep">|</span>'+(100-pct)+'% <small>OPEN</small></div>'
+   +'<div class="segbar"><i style="width:'+pct+'%;background:linear-gradient(90deg,#57a05b,#8bd48d)"></i><i style="width:'+(100-pct)+'%;background:linear-gradient(90deg,#ed7d31,#ffb066)"></i></div>'
+   +'<div class="duo2"><span><b>'+b.closed+'</b> CLOSED</span><span><b>'+b.open+'</b> OPEN · '+tot+' TOT</span></div></div>';
+ });
+ $('eit9-kpis').innerHTML='<div class="statgrid" style="grid-template-columns:repeat(auto-fit,minmax(250px,1fr))">'+khtml+'</div>';
+ let h='<tr><th>#</th><th>DISC</th><th>TAG</th><th>ASSET DESCRIPTION</th><th>STATE</th><th>CLOSE DATE</th><th>CATEGORY</th><th>TASK TYPE</th></tr>';
+ let rows='';
+ open.forEach((r,i)=>{
+  rows+='<tr><td style="text-align:center">'+(i+1)+'</td>';
+  rows+='<td style="font-weight:600">'+esc(r[2])+'</td>';
+  rows+='<td>'+esc(r[1])+'</td>';
+  rows+='<td style="white-space:normal;min-width:200px">'+esc(r[4])+'</td>';
+  rows+='<td>'+esc(r[5])+'</td>';
+  rows+='<td style="text-align:center">'+esc(r[6])+'</td>';
+  rows+='<td>'+esc(r[8])+'</td>';
+  rows+='<td>'+esc(r[3])+'</td></tr>';
+ });
+ $('t-eit9').innerHTML=h?'<thead>'+h+'</thead><tbody>'+rows+'</tbody>':'<tr><td colspan="8"><div class="empty">No open E/I/T tasks</div></td></tr>';
+ $('h-eit9').textContent=open.length+' open task(s) out of '+I.length+' total E/I/T (CPP AGI)';
+}
+const RENDER={dash:null,rfc:renderRfc,blk:renderBlk,pu:()=>renderList('pu'),it:()=>renderList('it'),sub:renderSub,done:renderDone,cables:renderCables,eit9:renderEit9};
 function countUp(){
  document.querySelectorAll('#v-dash .kpi b').forEach(el=>{
   const t=el.textContent;
