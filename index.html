@@ -349,9 +349,12 @@ function renderRfc(){
  const SH='RFC PROGRESS';
  const q=$('q-rfc').value.trim().toLowerCase();
  let d=RFC.filter(x=>!q||x.name.toLowerCase().includes(q)||x.sid.toLowerCase().includes(q));
- let hh='<tr><th>SUB SYSTEM</th><th>PRIORITY</th><th>RFC DATE (B,H,M,P,S)</th><th>RFC DATES EIT</th><th>BASELINE FORCAST</th><th>RECOVERY/REVISED</th><th>RFC SIGNED</th><th>MILESTONE</th><th>TOTAL %</th>';
- for(const dd of RFK)hh+='<th title="'+dd+'">'+dd+'</th>';
- hh+='<th>ITRs</th><th>CLOSED</th><th>BALANCE</th><th>ITR %</th><th>CPP-1</th><th>EIT</th><th>EACOP</th><th>EACOP</th><th>CPP-EIT</th><th>CPP-1</th><th>WALKDOWN STATUS</th><th style="width:26px">&#9873;</th><th style="min-width:170px">MY REMARKS</th></tr>';
+ let hh='<tr><th rowspan="2">SUB SYSTEM</th><th rowspan="2">PRIORITY</th><th rowspan="2">RFC DATE (B,H,M,P,S)</th><th rowspan="2">RFC DATES EIT</th><th rowspan="2">BASELINE FORCAST</th><th rowspan="2">RECOVERY/REVISED</th><th rowspan="2">RFC SIGNED</th><th rowspan="2">MILESTONE</th><th rowspan="2">TOTAL %</th>';
+  for(const dd of RFK)hh+='<th colspan="3" style="text-align:center;background:'+(dd==='E'?'#e8f0fe':'#f0f4f8')+';border:1px solid #ccc">'+dd+'</th>';
+  hh+='<th rowspan="2">ITRs</th><th rowspan="2">CLOSED</th><th rowspan="2">BALANCE</th><th rowspan="2">ITR %</th><th rowspan="2">CPP-1</th><th rowspan="2">EIT</th><th rowspan="2">EACOP</th><th rowspan="2">EACOP</th><th rowspan="2">CPP-EIT</th><th rowspan="2">CPP-1</th><th rowspan="2">WALKDOWN STATUS</th><th rowspan="2" style="width:26px">&#9873;</th><th rowspan="2" style="min-width:170px">MY REMARKS</th></tr>';
+  hh+='<tr>';
+  for(const dd of RFK)hh+='<th style="font-size:10px">T</th><th style="font-size:10px">CL</th><th style="font-size:10px">%</th>';
+  hh+='</tr>';
  let rows='';
  for(const x of d){
   rows+='<tr data-id="'+esc(x.sid)+'" data-sh="'+SH+'">';
