@@ -141,7 +141,7 @@ header,#wrap,.flow,footer{position:relative;z-index:1}
  <div><h1>PS5 <span>COMPLETION PLATFORM</span></h1><div class="meta">Report Date: 26-08-26    |    Source: PS-5 COMPLETIONS DPR SUMMERY -26-08-26.xlsx</div></div>
  <div id="clock"></div>
  <div id="syncbadge">&#9679; SYNCED TO EXCEL</div>
- <button id="xlsbtn" title="DOWNLOAD EXCEL">&#11015;</button><button id="prnbtn" title="PRINT">&#128424;</button><button id="svbtn" title="SAVE">&#128190;</button><button id="rfbtn" title="REFRESH / UPDATE">&#8635;</button><button id="lgbtn" title="SIGN IN TO EDIT">&#128274;</button>
+ <button id="xlsbtn" title="DOWNLOAD EXCEL">&#11015;</button><button id="prnbtn" title="PRINT">&#128424;</button><button id="svbtn" title="SAVE">&#128190;</button><button id="rfbtn" title="REFRESH / UPDATE">&#8635;</button><button id="ugbtn" title="UPDATE ALL: Rebuild + Push">&#11014; UPDATE</button><button id="lgbtn" title="SIGN IN TO EDIT">&#128274;</button>
 </header>
 <div class="flow">
  <button class="step on" data-v="dash">1 &middot; DASHBOARD</button>
@@ -737,6 +737,10 @@ try{countUp()}catch(e){}
 #xlsbtn:hover{transform:translateY(-2px) scale(1.08)}
 #xlsbtn:active{transform:scale(.94)}
 #xlsbtn[disabled]{opacity:.55;cursor:wait}
+#ugbtn{width:auto;padding:0 14px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:none;border-radius:50px;color:#fff;font-size:10px;font-weight:800;letter-spacing:.8px;cursor:pointer;margin-left:8px;flex:0 0 auto;background:linear-gradient(135deg,#d95b17,#c2610c 55%,#8b4513);box-shadow:0 3px 10px -3px rgba(217,91,23,.8),inset 0 1px 0 rgba(255,255,255,.35);transition:transform .15s ease,filter .15s ease}
+#ugbtn:hover{transform:translateY(-1px);filter:brightness(1.12)}
+#ugbtn:active{transform:scale(.93)}
+#ugbtn[disabled]{opacity:.55;cursor:wait}
 @media print{body::before,#xlsbtn,#prnbtn,#svbtn,#rfbtn,header,.flow,footer,.tools,.hint,#syncbadge,#clock{display:none!important}body{background:#fff!important}.view{display:none!important}.view.on{display:block!important}.panel{background:#fff!important;border:1px solid #b9c2cd!important;box-shadow:none!important;margin:8px 0!important;break-inside:auto}.kpis{padding-top:8px!important}.tblwrap{max-height:none!important;overflow:visible!important;border:none!important}th{position:static!important;background:#e8edf3!important;color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}td{color:#000!important;background:#fff!important}tbody tr:nth-child(even) td{background:#f4f6f9!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}h1,h2,h3,p,span,b,div,td,th,li,label{color:#000!important;text-shadow:none!important}}
 </style>
 
