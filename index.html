@@ -368,36 +368,36 @@ function renderRfc(){
  let d=RFC.filter(x=>!q||x.name.toLowerCase().includes(q)||x.sid.toLowerCase().includes(q));
  const DC={B:'#e8d5c4',E:'#d4e6f1',H:'#d5f5e3',I:'#fdebd0',M:'#fadbd8',P:'#e8daef',S:'#f9e79f',T:'#d6eaf8'};
  const DL={B:'#8b5e3c',E:'#1a5276',H:'#1e8449',I:'#b9770e',M:'#922b21',P:'#6c3483',S:'#7d6608',T:'#1b4f72'};
- let hh='<tr><th rowspan="2">SUB SYSTEM</th><th rowspan="2">PRIORITY</th><th rowspan="2">RFC DATE (B,H,M,P,S)</th><th rowspan="2">RFC DATES EIT</th><th rowspan="2">BASELINE FORCAST</th><th rowspan="2">RECOVERY/REVISED</th><th rowspan="2">RFC SIGNED</th><th rowspan="2">MILESTONE</th><th rowspan="2">TOTAL %</th>';
-  for(const dd of RFK)hh+='<th colspan="3" style="text-align:center;background:'+DL[dd]+';color:#fff;border:1px solid #888;font-size:11px;letter-spacing:1px">'+dd+'</th>';
-  hh+='<th rowspan="2">ITRs</th><th rowspan="2">CLOSED</th><th rowspan="2">BALANCE</th><th rowspan="2">ITR %</th><th rowspan="2">CPP-1</th><th rowspan="2">EIT</th><th rowspan="2">EACOP</th><th rowspan="2">EACOP</th><th rowspan="2">CPP-EIT</th><th rowspan="2">CPP-1</th><th rowspan="2">WALKDOWN STATUS</th><th rowspan="2" style="width:26px">&#9873;</th><th rowspan="2" style="min-width:170px">MY REMARKS</th></tr>';
-  hh+='<tr>';
-  for(const dd of RFK)hh+='<th style="font-size:10px;background:'+DL[dd]+';color:#fff;border:1px solid #888">T</th><th style="font-size:10px;background:'+DL[dd]+';color:#fff;border:1px solid #888">CL</th><th style="font-size:10px;background:'+DL[dd]+';color:#fff;border:1px solid #888">%</th>';
-  hh+='</tr>';
+  let hh='<tr><th rowspan="2" style="min-width:180px;max-width:220px">SUB SYSTEM</th><th rowspan="2" style="width:40px">PRIO</th><th rowspan="2" style="width:70px">RFC BHM</th><th rowspan="2" style="width:65px">RFC EIT</th><th rowspan="2" style="width:70px">BASE</th><th rowspan="2" style="width:70px">RECOV</th><th rowspan="2" style="width:55px">SIGNED</th><th rowspan="2" style="width:90px">MILESTONE</th><th rowspan="2" style="width:50px">TOT%</th>';
+   for(const dd of RFK)hh+='<th colspan="3" style="text-align:center;background:'+DL[dd]+';color:#fff;border:1px solid #888;font-size:10px;letter-spacing:1px;padding:4px 2px">'+dd+'</th>';
+   hh+='<th rowspan="2" style="width:38px">ITRs</th><th rowspan="2" style="width:38px">CL</th><th rowspan="2" style="width:38px">BAL</th><th rowspan="2" style="width:42px">ITR%</th><th rowspan="2" style="width:38px">CPP</th><th rowspan="2" style="width:38px">EIT</th><th rowspan="2" style="width:38px">EACP</th><th rowspan="2" style="width:80px">REMARK E</th><th rowspan="2" style="width:80px">REMARK C</th><th rowspan="2" style="width:80px">REMARK 1</th><th rowspan="2" style="width:65px">WALKDOWN</th><th rowspan="2" style="width:22px">&#9873;</th><th rowspan="2" style="width:140px">MY NOTES</th></tr>';
+   hh+='<tr>';
+   for(const dd of RFK)hh+='<th style="font-size:9px;background:'+DL[dd]+';color:#fff;border:1px solid #888;padding:3px 2px">T</th><th style="font-size:9px;background:'+DL[dd]+';color:#fff;border:1px solid #888;padding:3px 2px">CL</th><th style="font-size:9px;background:'+DL[dd]+';color:#fff;border:1px solid #888;padding:3px 2px">%</th>';
+   hh+='</tr>';
  let rows='';
  for(const x of d){
   rows+='<tr data-id="'+esc(x.sid)+'" data-sh="'+SH+'">';
-  rows+='<td class="sublink" data-go="'+esc(x.sid)+'" style="white-space:normal;min-width:240px">'+esc(x.name)+'</td>';
-  rows+=edt(SH,x.sid,'Priority',x.prio,'style="text-align:center;font-weight:700"');
-  rows+=edt(SH,x.sid,'RFC BHMPS',x.bhm,'style="text-align:center"')+edt(SH,x.sid,'RFC EIT',x.eit,'style="text-align:center"')+edt(SH,x.sid,'Baseline',x.base,'style="text-align:center"')+edt(SH,x.sid,'Recovery',x.rec,'style="text-align:center"');
-  const scol=x.signed==='COMPLETE'?'color:#2e7d32':(x.signed==='PARTIAL'?'color:#ed7d31':'');
-  rows+=edt(SH,x.sid,'SIGNED',x.signed||'-','style="text-align:center;font-weight:700;'+scol+'"');
-  rows+=edt(SH,x.sid,'Milestone',x.mile);
-  const tp=x.tot===''?null:x.tot;
-  rows+='<td><div style="display:flex;align-items:center;gap:6px">'+(tp===null?'':bar(tp))+'<b style="font-size:11px">'+(tp===null?'-':tp+'%')+'</b></div></td>';
-  for(let k=0;k<8;k++){
-   const dd=x.d[k];const dk=RFK[k];const bg=DC[dk]||'';
-   rows+=edt(SH,x.sid,dk+' TOTAL',dd.t,'style="text-align:center;background:'+bg+'"')+edt(SH,x.sid,dk+' CLOSED',dd.c,'style="text-align:center;background:'+bg+'"');
-    const p=dd.t>0?Math.round(dd.c/dd.t*100):(dd.c>0?100:null);
-   rows+='<td class="dcell" style="text-align:center;background:'+bg+';color:'+(p===null?'#bbb':pcol(p))+';font-weight:700">'+(p===null?'-':p+'%')+'</td>';
-  }
-  rows+=edt(SH,x.sid,'ITRs',x.it,'style="text-align:center;font-weight:700"')+edt(SH,x.sid,'CLOSED',x.ic,'style="text-align:center"')+edt(SH,x.sid,'BALANCE',x.ib,'style="text-align:center"');
-  rows+='<td style="text-align:center"><span class="pct" style="background:'+pcol(x.itrp||0)+'">'+(x.itrp===''?'-':x.itrp+'%')+'</span></td>';
-  rows+=edt(SH,x.sid,'CPP-1',x.b1||'','style="text-align:center"',x.b1>0?'blk':'')+edt(SH,x.sid,'EIT',x.b2||'','style="text-align:center"',x.b2>0?'blk':'')+edt(SH,x.sid,'EACOP',x.b3||'','style="text-align:center"',x.b3>0?'blk':'');
-  rows+=edt(SH,x.sid,'REMARK EACOP',x.re1,'style="min-width:130px;background:#fff8e1"')+edt(SH,x.sid,'REMARK CPP-EIT',x.re2,'style="min-width:130px;background:#fff8e1"')+edt(SH,x.sid,'REMARK CPP-1',x.re3,'style="min-width:130px;background:#fff8e1"');
-  rows+=edt(SH,x.sid,'STATUS',x.wd,'style="text-align:center"');
-  rows+='<td style="width:26px"><button class="cb"></button></td>';
-  rows+='<td><input class="ni" style="width:200px" placeholder="+ remark..." value="'+esc((NOTES[SH]||{})[x.sid]||'')+'"></td></tr>';
+  rows+='<td class="sublink" data-go="'+esc(x.sid)+'" style="white-space:normal;min-width:180px">'+esc(x.name)+'</td>';
+   rows+=edt(SH,x.sid,'Priority',x.prio,'style="text-align:center;font-weight:700;padding:4px 3px"');
+   rows+=edt(SH,x.sid,'RFC BHMPS',x.bhm,'style="text-align:center;padding:4px 3px;font-size:10px"')+edt(SH,x.sid,'RFC EIT',x.eit,'style="text-align:center;padding:4px 3px;font-size:10px"')+edt(SH,x.sid,'Baseline',x.base,'style="text-align:center;padding:4px 3px;font-size:10px"')+edt(SH,x.sid,'Recovery',x.rec,'style="text-align:center;padding:4px 3px;font-size:10px"');
+   const scol=x.signed==='COMPLETE'?'color:#2e7d32':(x.signed==='PARTIAL'?'color:#ed7d31':'');
+   rows+=edt(SH,x.sid,'SIGNED',x.signed||'-','style="text-align:center;font-weight:700;'+scol+';padding:4px 3px"');
+   rows+=edt(SH,x.sid,'Milestone',x.mile,'style="padding:4px 3px;font-size:10px"');
+   const tp=x.tot===''?null:x.tot;
+   rows+='<td><div style="display:flex;align-items:center;gap:3px">'+(tp===null?'':bar(tp))+'<b style="font-size:10px">'+(tp===null?'-':tp+'%')+'</b></div></td>';
+   for(let k=0;k<8;k++){
+    const dd=x.d[k];const dk=RFK[k];const bg=DC[dk]||'';
+    rows+=edt(SH,x.sid,dk+' TOTAL',dd.t,'style="text-align:center;background:'+bg+';padding:3px 2px;font-size:10px"')+edt(SH,x.sid,dk+' CLOSED',dd.c,'style="text-align:center;background:'+bg+';padding:3px 2px;font-size:10px"');
+     const p=dd.t>0?Math.round(dd.c/dd.t*100):(dd.c>0?100:null);
+    rows+='<td class="dcell" style="text-align:center;background:'+bg+';color:'+(p===null?'#bbb':pcol(p))+';font-weight:700;font-size:10px;padding:3px 2px">'+(p===null?'-':p+'%')+'</td>';
+   }
+   rows+=edt(SH,x.sid,'ITRs',x.it,'style="text-align:center;font-weight:700;padding:3px 2px"')+edt(SH,x.sid,'CLOSED',x.ic,'style="text-align:center;padding:3px 2px"')+edt(SH,x.sid,'BALANCE',x.ib,'style="text-align:center;padding:3px 2px"');
+   rows+='<td style="text-align:center;padding:3px 2px"><span class="pct" style="background:'+pcol(x.itrp||0)+'">'+(x.itrp===''?'-':x.itrp+'%')+'</span></td>';
+   rows+=edt(SH,x.sid,'CPP-1',x.b1||'','style="text-align:center;padding:3px 2px"',x.b1>0?'blk':'')+edt(SH,x.sid,'EIT',x.b2||'','style="text-align:center;padding:3px 2px"',x.b2>0?'blk':'')+edt(SH,x.sid,'EACOP',x.b3||'','style="text-align:center;padding:3px 2px"',x.b3>0?'blk':'');
+   rows+=edt(SH,x.sid,'REMARK EACOP',x.re1,'style="min-width:80px;max-width:100px;white-space:normal;font-size:10px;background:#fff8e1"')+edt(SH,x.sid,'REMARK CPP-EIT',x.re2,'style="min-width:80px;max-width:100px;white-space:normal;font-size:10px;background:#fff8e1"')+edt(SH,x.sid,'REMARK CPP-1',x.re3,'style="min-width:80px;max-width:100px;white-space:normal;font-size:10px;background:#fff8e1"');
+   rows+=edt(SH,x.sid,'STATUS',x.wd,'style="text-align:center;padding:3px 2px"');
+   rows+='<td style="width:22px"><button class="cb"></button></td>';
+   rows+='<td><input class="ni" style="width:130px" placeholder="+ note..." value="'+esc((NOTES[SH]||{})[x.sid]||'')+'"></td></tr>';
  }
  $('t-rfc').innerHTML='<thead>'+hh+'</thead><tbody>'+(rows||emptyRow())+'</tbody>';
  $('h-rfc').textContent=d.length+' subsystem(s) - every cell is editable & syncs to Excel';
@@ -509,7 +509,7 @@ function renderCables(){
   return true;
  });
  const LIMIT=2000,trunc=d.length>LIMIT;const view=trunc?d.slice(0,LIMIT):d;
- let h='<tr><th>#</th><th>DISC</th><th>CABLE TAG</th><th>FROM EQUIPMENT TAG</th><th>FROM DESCRIPTION</th><th>FROM LOCATION</th><th>TO EQUIPMENT TAG</th><th>TO DESCRIPTION</th><th>TO LOCATION</th><th>PULLING DATE</th><th>RFI NUM</th><th>EIT DATE</th><th>RFC DATE</th><th>PUNCH</th></tr>';
+ let h='<tr><th style="width:30px">#</th><th style="width:80px">DISC</th><th style="width:180px">CABLE TAG</th><th style="width:130px">FROM TAG</th><th style="min-width:120px;max-width:180px">FROM DESC</th><th style="width:100px">FROM LOC</th><th style="width:130px">TO TAG</th><th style="min-width:120px;max-width:180px">TO DESC</th><th style="width:100px">TO LOC</th><th style="width:85px">PULLING</th><th style="width:70px">RFI#</th><th style="width:85px">EIT DT</th><th style="width:85px">RFC DT</th><th style="min-width:100px;max-width:160px">PUNCH</th></tr>';
  let rows='';
  const DC={'Electrical':'#d4e6f1','Instrument':'#fdebd0','Telecom':'#d6eaf8','Trace Heating':'#fadbd8'};
  view.forEach((r,i)=>{
@@ -517,13 +517,13 @@ function renderCables(){
   rows+='<tr><td style="text-align:center">'+(i+1)+'</td>';
   rows+='<td style="background:'+bg+'">'+esc(r[1])+'</td>';
   rows+='<td style="font-weight:600">'+esc(r[2])+'</td>';
-  rows+='<td>'+esc(r[3])+'</td><td>'+esc(r[4])+'</td><td>'+esc(r[5])+'</td>';
-  rows+='<td>'+esc(r[6])+'</td><td>'+esc(r[7])+'</td><td>'+esc(r[8])+'</td>';
+  rows+='<td>'+esc(r[3])+'</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis">'+esc(r[4])+'</td><td>'+esc(r[5])+'</td>';
+  rows+='<td>'+esc(r[6])+'</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis">'+esc(r[7])+'</td><td>'+esc(r[8])+'</td>';
   rows+='<td style="text-align:center">'+esc(r[9])+'</td>';
   rows+='<td>'+esc(r[10])+'</td>';
   rows+='<td style="text-align:center">'+esc(r[11])+'</td>';
   rows+='<td style="text-align:center">'+esc(r[12])+'</td>';
-  rows+='<td style="max-width:200px;white-space:normal">'+esc(r[13])+'</td></tr>';
+  rows+='<td style="max-width:160px;white-space:normal">'+esc(r[13])+'</td></tr>';
  });
  $('t-cab').innerHTML='<thead>'+h+'</thead><tbody>'+(rows||emptyRow())+'</tbody>';
  $('h-cab').textContent=d.length+(trunc?' (first '+LIMIT+' shown)':'')+' cables'+(sid?' | subsystem: '+sid:'')+(disc?' | discipline: '+disc:'');
