@@ -357,13 +357,13 @@ function renderSub(){
  const ic=I.filter(r=>doneI(r[5])).length;
  const pp=P.length?Math.round(pc/P.length*100):0;
  const ip=I.length?Math.round(ic/I.length*100):0;
- const E=I.filter(r=>r[2]==='Electrical'&&r[7]==='CPP AGI');
+ const E=I.filter(r=>r[2]==='E'&&r[7]==='CPP AGI');
  const ec=E.filter(r=>doneI(r[5])).length;
  const ep=E.length?Math.round(ec/E.length*100):0;
- const INS=I.filter(r=>r[2]==='Instrumentation'&&r[7]==='CPP AGI');
+ const INS=I.filter(r=>r[2]==='I'&&r[7]==='CPP AGI');
  const isc=INS.filter(r=>doneI(r[5])).length;
  const isp=INS.length?Math.round(isc/INS.length*100):0;
- const T=I.filter(r=>r[2]==='Telecom'&&r[7]==='CPP AGI');
+ const T=I.filter(r=>r[2]==='T'&&r[7]==='CPP AGI');
  const tc=T.filter(r=>doneI(r[5])).length;
  const tp_val=T.length?Math.round(tc/T.length*100):0;
  function st(lab,cp,op,c,o,n){
@@ -559,18 +559,19 @@ function renderEit9(){
  if(!SUBCUR){$('t-eit9').innerHTML='<tr><td colspan="8"><div class="empty">Select a subsystem first from page 6</div></td></tr>';return;}
  const x=RFC.find(r=>r.sid===SUBCUR)||{name:SUBCUR};
  $('eit9-hero').querySelector('h2').innerHTML='ITR OPEN &mdash; E / I / T (CPP AGI) &mdash; <span class="sidchip">'+esc(SUBCUR)+'</span>'+esc(x.name||'');
- const I=ITR.filter(r=>r[9]===SUBCUR&&['Electrical','Instrumentation','Telecom'].includes(r[2])&&r[7]==='CPP AGI');
+ const I=ITR.filter(r=>r[9]===SUBCUR&&['E','I','T'].includes(r[2])&&r[7]==='CPP AGI');
  const open=I.filter(r=>!doneI(r[5]));
  const closed=I.filter(r=>doneI(r[5]));
  const byDisc={};
  open.forEach(r=>{const d=r[2];if(!byDisc[d])byDisc[d]={open:0,closed:0};byDisc[d].open++;});
  closed.forEach(r=>{const d=r[2];if(!byDisc[d])byDisc[d]={open:0,closed:0};byDisc[d].closed++;});
- const colors={Electrical:'#1a5276',Instrumentation:'#b9770e',Telecom:'#1b4f72'};
+ const colors={E:'#1a5276',I:'#b9770e',T:'#1b4f72'};
+ const discNames={E:'E - ELECTRICAL',I:'I - INSTRUMENT',T:'T - TELECOM'};
  let khtml='';
- ['Electrical','Instrumentation','Telecom'].forEach(d=>{
+ ['E','I','T'].forEach(d=>{
   const b=byDisc[d]||{open:0,closed:0};
   const tot=b.open+b.closed;const pct=tot?Math.round(b.closed/tot*100):0;
-  khtml+='<div class="stat" style="background:'+colors[d]+'"><h4>'+d.charAt(0)+' - '+d.toUpperCase()+' (CPP AGI)</h4>'
+  khtml+='<div class="stat" style="background:'+colors[d]+'"><h4>'+discNames[d]+' (CPP AGI)</h4>'
    +'<div class="v">'+pct+'% <small>CLOSED</small><span class="sep">|</span>'+(100-pct)+'% <small>OPEN</small></div>'
    +'<div class="segbar"><i style="width:'+pct+'%;background:linear-gradient(90deg,#57a05b,#8bd48d)"></i><i style="width:'+(100-pct)+'%;background:linear-gradient(90deg,#ed7d31,#ffb066)"></i></div>'
    +'<div class="duo2"><span><b>'+b.closed+'</b> CLOSED</span><span><b>'+b.open+'</b> OPEN · '+tot+' TOT</span></div></div>';
