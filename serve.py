@@ -25,6 +25,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         parsed = urlparse(self.path)
         if parsed.path == '/api/rebuild':
             self._handle_rebuild()
+        elif parsed.path == '/api/update-all':
+            self._handle_update_all()
         else:
             self.send_error(404)
 
@@ -47,6 +49,50 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._json_response(500, {'ok': False, 'error': 'Rebuild timed out (120s)'})
         except Exception as e:
             self._json_response(500, {'ok': False, 'error': str(e)})
+
+    def _handle_update_all(self):
+        steps = []
+        try:
+            # Step 1: Rebuild from XLSX
+            steps.append('Rebuilding from XLSX...')
+            if not os.path.exists(REBUILD_SCRIPT):
+                self._json_response(500, {'ok': False, 'error': 'Rebuild script not found', 'steps': steps})
+                return
+            r = subprocess.run([sys.executable, REBUILD_SCRIPT], capture_output=True, text=True, timeout=120, cwd=DIR)
+            if r.returncode != 0:
+                self._json_response(500, {'ok': False, 'error': f'Rebuild failed: {r.stderr[-300:]}', 'steps': steps})
+                return
+            steps.append('Rebuild OK')
+
+            # Step 2: git add
+            steps.append('Git add...')
+            r = subprocess.run(['git', 'add', 'index.html'], capture_output=True, text=True, timeout=30, cwd=DIR)
+            if r.returncode != 0:
+                self._json_response(500, {'ok': False, 'error': f'git add failed: {r.stderr}', 'steps': steps})
+                return
+            steps.append('Git add OK')
+
+            # Step 3: git commit
+            steps.append('Git commit...')
+            r = subprocess.run(['git', 'commit', '-m', 'Update all from XLSX (auto)', '--no-verify'], capture_output=True, text=True, timeout=30, cwd=DIR)
+            if r.returncode != 0 and 'nothing to commit' not in r.stdout:
+                self._json_response(500, {'ok': False, 'error': f'git commit failed: {r.stderr}', 'steps': steps})
+                return
+            steps.append('Git commit OK')
+
+            # Step 4: git push
+            steps.append('Git push...')
+            r = subprocess.run(['git', 'push', 'origin', 'main', '--no-verify'], capture_output=True, text=True, timeout=60, cwd=DIR)
+            if r.returncode != 0:
+                self._json_response(500, {'ok': False, 'error': f'git push failed: {r.stderr}', 'steps': steps})
+                return
+            steps.append('Git push OK — site updated!')
+
+            self._json_response(200, {'ok': True, 'steps': steps, 'output': r.stdout[-300:]})
+        except subprocess.TimeoutExpired:
+            self._json_response(500, {'ok': False, 'error': 'Timed out', 'steps': steps})
+        except Exception as e:
+            self._json_response(500, {'ok': False, 'error': str(e), 'steps': steps})
 
     def _json_response(self, code, data):
         body = json.dumps(data).encode('utf-8')
