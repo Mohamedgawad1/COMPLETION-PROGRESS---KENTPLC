@@ -695,7 +695,7 @@ btn.addEventListener('click',function(){btn.disabled=true;ensureXLSX(function(ok
 <script>
 (function(){"use strict";
 var pb=document.getElementById('prnbtn');if(pb)pb.addEventListener('click',function(){try{window.print();}catch(e){}});
-var rb=document.getElementById('rfbtn');if(rb)rb.addEventListener('click',function(){try{location.reload()}catch(e){}});
+var rb=document.getElementById('rfbtn');if(rb)rb.addEventListener('click',function(){rb.disabled=true;rb.style.opacity='0.5';rb.innerHTML='&#8987;';fetch('/api/rebuild',{method:'POST'}).then(function(r){return r.json()}).then(function(d){if(d.ok){location.reload()}else{alert('Rebuild error: '+(d.error||'Unknown'));rb.disabled=false;rb.style.opacity='';rb.innerHTML='&#8635;'}}).catch(function(e){alert('Server not running. Start with: python serve.py');rb.disabled=false;rb.style.opacity='';rb.innerHTML='&#8635;'})});
 var sb=document.getElementById('svbtn');
 function post(sh,id,patch){try{fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({sheet:sh,id:id},patch))}).catch(function(){});}catch(e){}}
 function resave(){var n=0,i,k,st;try{for(i=0;i<localStorage.length;i++){k=localStorage.key(i);if(!k||k.indexOf('xstate_')!==0)continue;var sh=k.slice(7);try{st=JSON.parse(localStorage.getItem(k)||'{}');}catch(e){continue;}for(var id in st){var v=st[id];if(id==='_c'){for(var j in v){post(sh,j,{color:v[j]});n++;}}else if(id==='_e'){for(var j2 in v){var o=v[j2];for(var c in o){post(sh,j2,{col:c,value:o[c]});n++;}}}else{post(sh,id,{note:v});n++;}}}}catch(e){}
