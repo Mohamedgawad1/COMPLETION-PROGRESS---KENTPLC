@@ -307,6 +307,7 @@ let SUBCUR='';
 function goSub(sid){
  SUBCUR=sid;
  $('s-pu').value=sid;$('s-it').value=sid;$('q-pu').value='';$('q-it').value='';
+ $('s-cab').value=sid;$('s-disc').value='';$('q-cab').value='';
  try{history.replaceState(null,'','#'+sid)}catch(e){}
  show('sub');renderSub();
 }
