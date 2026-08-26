@@ -346,12 +346,15 @@ function renderSub(){
  const ic=I.filter(r=>doneI(r[5])).length;
  const pp=P.length?Math.round(pc/P.length*100):0;
  const ip=I.length?Math.round(ic/I.length*100):0;
- const E=I.filter(r=>r[2]==='Electrical');
+ const E=I.filter(r=>r[2]==='Electrical'&&r[7]==='CPP AGI');
  const ec=E.filter(r=>doneI(r[5])).length;
  const ep=E.length?Math.round(ec/E.length*100):0;
- const EIT=I.filter(r=>['Electrical','Instrumentation','Telecom'].includes(r[2])&&r[7]==='CPP AGI');
- const eic=EIT.filter(r=>doneI(r[5])).length;
- const eip=EIT.length?Math.round(eic/EIT.length*100):0;
+ const INS=I.filter(r=>r[2]==='Instrumentation'&&r[7]==='CPP AGI');
+ const isc=INS.filter(r=>doneI(r[5])).length;
+ const isp=INS.length?Math.round(isc/INS.length*100):0;
+ const T=I.filter(r=>r[2]==='Telecom'&&r[7]==='CPP AGI');
+ const tc=T.filter(r=>doneI(r[5])).length;
+ const tp_val=T.length?Math.round(tc/T.length*100):0;
  function st(lab,cp,op,c,o,n){
   return '<div class="stat"><h4>'+lab+'</h4><div class="v">'+cp+'% <small>CLOSED</small><span class="sep">|</span>'+op+'% <small>OPEN</small></div><div class="segbar"><i style="width:'+cp+'%;background:linear-gradient(90deg,#57a05b,#8bd48d)"></i><i style="width:'+op+'%;background:linear-gradient(90deg,#ed7d31,#ffb066)"></i></div><div class="duo2"><span><b>'+c.toLocaleString('en-US')+'</b> CLOSED</span><span><b>'+o.toLocaleString('en-US')+'</b> OPEN · '+n.toLocaleString('en-US')+' TOT</span></div></div>';
  }
@@ -360,8 +363,9 @@ function renderSub(){
    +st('ITR',ip,100-ip,ic,I.length-ic,I.length)
    +'</div>'
    +'<div class="statgrid" style="grid-template-columns:repeat(auto-fit,minmax(250px,1fr));margin-top:10px">'
-   +st('E - ELECTRICAL',ep,100-ep,ec,E.length-ec,E.length)
-   +st('EIT CPP AGI',eip,100-eip,eic,EIT.length-eic,EIT.length)
+   +st('E - ELECTRICAL (CPP AGI)',ep,100-ep,ec,E.length-ec,E.length)
+   +st('I - INSTRUMENT (CPP AGI)',isp,100-isp,isc,INS.length-isc,INS.length)
+   +st('T - TELECOM (CPP AGI)',tp_val,100-tp_val,tc,T.length-tc,T.length)
    +'</div>'
    +'<div style="margin-top:10px">TOTAL %: <b>'+(x.tot===''?'-':x.tot+'%')+'</b> &nbsp;|&nbsp; RFC SIGNED: <b>'+esc(x.signed||'-')+'</b>'
    +(CABLES.some(c=>c[0]===SUBCUR)?' &nbsp;|&nbsp; <a href="#" onclick="showCablesForSub(\''+esc(SUBCUR)+'\');return false" style="color:#1a5276;font-weight:700;text-decoration:underline;cursor:pointer">CABLES ('+CABLES.filter(c=>c[0]===SUBCUR).length+')</a>':'')
