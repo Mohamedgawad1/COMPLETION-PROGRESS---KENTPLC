@@ -404,13 +404,14 @@ function renderRfc(){
  let rows='';
  for(const x of d){
 const sg=(x.signed||'').toString().trim().toUpperCase();
-   const sbg=sg==='COMPLETE'?'#c6efce':(sg.startsWith('PARTIAL')?'#f6b26b':(sg? '#ffeb9c':''));
+   const present7=(x.tot!==''&&x.tot>=100)||sg.startsWith('COMPLETE')||sg.startsWith('PARTIAL');
+   const sbg=sg.startsWith('COMPLETE')?'#c6efce':(sg.startsWith('PARTIAL')?'#f6b26b':(present7?'#ffeb9c':''));
    rows+='<tr data-id="'+esc(x.sid)+'" data-sh="'+SH+'">';
    rows+='<td class="sublink" data-go="'+esc(x.sid)+'" style="white-space:normal;min-width:180px;background:'+sbg+'">'+esc(x.name)+'</td>';
-   rows+=edt(SH,x.sid,'Priority',x.prio,'style="text-align:center;font-weight:700;padding:4px 3px"');
-   rows+=edt(SH,x.sid,'RFC BHMPS',x.bhm,'style="text-align:center;padding:4px 3px;font-size:10px"')+edt(SH,x.sid,'RFC EIT',x.eit,'style="text-align:center;padding:4px 3px;font-size:10px"')+edt(SH,x.sid,'Baseline',x.base,'style="text-align:center;padding:4px 3px;font-size:10px"')+edt(SH,x.sid,'Recovery',x.rec,'style="text-align:center;padding:4px 3px;font-size:10px"');
-   const scol=x.signed==='COMPLETE'?'color:#2e7d32':(x.signed==='PARTIAL'?'color:#ed7d31':'');
-   rows+=edt(SH,x.sid,'SIGNED',x.signed||'-','style="text-align:center;font-weight:700;'+scol+';padding:4px 3px"');
+    rows+=edt(SH,x.sid,'Priority',x.prio,'style="text-align:center;font-weight:700;padding:4px 3px"');
+    rows+=edt(SH,x.sid,'RFC BHMPS',x.bhm,'style="text-align:center;padding:4px 3px;font-size:10px"')+edt(SH,x.sid,'RFC EIT',x.eit,'style="text-align:center;padding:4px 3px;font-size:10px"')+edt(SH,x.sid,'Baseline',x.base,'style="text-align:center;padding:4px 3px;font-size:10px"')+edt(SH,x.sid,'Recovery',x.rec,'style="text-align:center;padding:4px 3px;font-size:10px"');
+   const scol=sg.startsWith('COMPLETE')?'color:#2e7d32':(sg.startsWith('PARTIAL')?'color:#ed7d31':'');
+    rows+=edt(SH,x.sid,'SIGNED',x.signed||'-','style="text-align:center;font-weight:700;'+scol+';padding:4px 3px"');
    rows+=edt(SH,x.sid,'Milestone',x.mile,'style="padding:4px 3px;font-size:10px"');
    const tp=x.tot===''?null:x.tot;
    rows+='<td><div style="display:flex;align-items:center;gap:3px">'+(tp===null?'':bar(tp))+'<b style="font-size:10px">'+(tp===null?'-':tp+'%')+'</b></div></td>';
@@ -515,8 +516,9 @@ function renderDone(){
   rows+='<td class="sublink" data-go="'+esc(x.sid)+'" style="white-space:normal;min-width:260px">'+esc(x.name)+'</td>';
   rows+='<td style="text-align:center;font-weight:700">'+(x.tot===''?'-':x.tot+'%')+'</td>';
   rows+=edt(SH,x.sid,'Milestone',x.mile);
-  const scol=x.signed==='COMPLETE'?'color:#2e7d32':(x.signed==='PARTIAL'?'color:#ed7d31':'');
-  rows+=edt(SH,x.sid,'SIGNED',x.signed||'-','style="text-align:center;font-weight:700;'+scol+'"');
+const sg7=(x.signed||'').toString().trim().toUpperCase();
+   const scol=sg7.startsWith('COMPLETE')?'color:#2e7d32':(sg7.startsWith('PARTIAL')?'color:#ed7d31':'');
+   rows+=edt(SH,x.sid,'SIGNED',x.signed||'-','style="text-align:center;font-weight:700;'+scol+'"');
   rows+=edt(SH,x.sid,'STATUS',ovv(SH,x.sid,'STATUS',x.wd),'style="text-align:center"');
   rows+='<td><input class="ni" style="width:220px" placeholder="+ remark..." value="'+esc(N[x.sid]||'')+'"></td></tr>';
  });
