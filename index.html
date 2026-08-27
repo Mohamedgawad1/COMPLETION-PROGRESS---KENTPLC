@@ -691,14 +691,17 @@ function tick(){
 const FILTERS={};let FMENU=null;
 function closeMenu(){if(FMENU){FMENU.remove();FMENU=null}}
 document.addEventListener('click',function(e){if(FMENU&&!FMENU.contains(e.target)&&!e.target.closest('.fbtn'))closeMenu()});
-function thCols(tb){const map=new Map();const thead=tb.querySelector('thead');if(!thead)return map;const occ=[];
- for(const tr of thead.rows){let c=0;for(const th of tr.cells){while((occ[c]||0)>0)c++;map.set(th,c);
-  const cs=th.colSpan||1,rs=th.rowSpan||1;for(let i=0;i<cs;i++)occ[c+i]=rs;c+=cs;}
+function headRows(tb){const thead=tb.querySelector('thead');if(thead)return [...thead.rows];
+ const rs=[];for(const r of tb.rows){let h=false;for(const c of r.cells)if(c.nodeName==='TH'){h=true;break}if(!h)break;rs.push(r)}return rs}
+function thCols(tb){const map=new Map();const rows=headRows(tb);if(!rows.length)return map;const occ=[];
+ for(const tr of rows){let c=0;for(const thc of tr.cells){if(thc.nodeName!=='TH')continue;while((occ[c]||0)>0)c++;map.set(thc,c);
+  const cs=thc.colSpan||1,rs=thc.rowSpan||1;for(let i=0;i<cs;i++)occ[c+i]=rs;c+=cs;}
   for(let i=0;i<occ.length;i++)if(occ[i]>0)occ[i]--;}
  return map}
-function colVals(tb,ci){const s=new Map();tb.querySelectorAll('tbody tr').forEach(tr=>{const td=tr.children[ci];if(!td)return;const v=(td.textContent||'').trim()||'(Blank)';s.set(v,(s.get(v)||0)+1)});return [...s.entries()].sort((a,b)=>a[0].localeCompare(b[0],'en',{numeric:true}))}
-function applyFilters(tid){const tb=document.getElementById(tid);if(!tb)return;const f=FILTERS[tid]||{};tb.querySelectorAll('tbody tr').forEach(tr=>{let ok=true;for(const ci in f){const set=f[ci];if(!set||!set.size)continue;const td=tr.children[ci];const v=((td&&td.textContent)||'').trim()||'(Blank)';if(!set.has(v)){ok=false;break}}tr.style.display=ok?'':'none'})}
-function syncTh(tb){const f=FILTERS[tb.id]||{};const cm=thCols(tb);tb.querySelectorAll('thead th').forEach(th=>{const ci=cm.get(th)??-1;th.classList.toggle('act',!!(f[ci]&&f[ci].size))})}
+function allThs(tb){return headRows(tb).flatMap(r=>[...r.cells].filter(c=>c.nodeName==='TH'))}
+function colVals(tb,ci){const s=new Map();tb.querySelectorAll('tbody tr').forEach(tr=>{if(tr.cells[0]&&tr.cells[0].nodeName==='TH')return;const td=tr.children[ci];if(!td)return;const v=(td.textContent||'').trim()||'(Blank)';s.set(v,(s.get(v)||0)+1)});return [...s.entries()].sort((a,b)=>a[0].localeCompare(b[0],'en',{numeric:true}))}
+function applyFilters(tid){const tb=document.getElementById(tid);if(!tb)return;const f=FILTERS[tid]||{};tb.querySelectorAll('tbody tr').forEach(tr=>{if(tr.cells[0]&&tr.cells[0].nodeName==='TH')return;let ok=true;for(const ci in f){const set=f[ci];if(!set||!set.size)continue;const td=tr.children[ci];const v=((td&&td.textContent)||'').trim()||'(Blank)';if(!set.has(v)){ok=false;break}}tr.style.display=ok?'':'none'})}
+function syncTh(tb){const f=FILTERS[tb.id]||{};const cm=thCols(tb);allThs(tb).forEach(th=>{const ci=cm.get(th)??-1;th.classList.toggle('act',!!(f[ci]&&f[ci].size))})}
 function openMenu(th,tid,ci){closeMenu();const tb=document.getElementById(tid);if(!tb)return;
  const cur=new Set(((FILTERS[tid]||{})[ci]||[]));
  const m=document.createElement('div');m.className='fmenu';
@@ -716,7 +719,7 @@ function openMenu(th,tid,ci){closeMenu();const tb=document.getElementById(tid);i
  m.querySelector('[data-a=ok]').addEventListener('click',()=>{FILTERS[tid]=FILTERS[tid]||{};FILTERS[tid][ci]=cur;applyFilters(tid);syncTh(tb);closeMenu()});
  draw('');FMENU=m;m.querySelector('input').focus();}
 document.querySelectorAll('table[id]').forEach(tb=>{
- function mk(){const cm=thCols(tb);tb.querySelectorAll('thead th').forEach(th=>{if(th.querySelector('.fbtn')||(th.colSpan||1)>1)return;
+ function mk(){const cm=thCols(tb);allThs(tb).forEach(th=>{if(th.querySelector('.fbtn')||(th.colSpan||1)>1)return;
   const ci=cm.get(th)??-1;if(ci<0)return;
   const b=document.createElement('span');b.className='fbtn';b.textContent='▾';
   b.addEventListener('click',ev=>{ev.stopPropagation();openMenu(th,tb.id,ci)});th.appendChild(b)})}
