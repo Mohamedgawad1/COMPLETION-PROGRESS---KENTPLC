@@ -15,7 +15,7 @@ from urllib.parse import urlparse
 
 PORT = 8080
 DIR = os.path.dirname(os.path.abspath(__file__))
-REBUILD_SCRIPT = os.path.join(os.path.expanduser('~'), 'AppData', 'Local', 'Temp', 'opencode', 'rebuild_data.py')
+REBUILD_SCRIPT = os.path.join(DIR, 'rebuild_data.py')
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
