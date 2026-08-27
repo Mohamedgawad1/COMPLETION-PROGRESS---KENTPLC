@@ -213,7 +213,7 @@ header,#wrap,.flow,footer{position:relative;z-index:1}
   <div id="sub-kpis"></div>
  </div>
  <div class="two">
-  <div class="panel"><h2>PUNCH LIST</h2><div class="tblwrap"><table id="t-sp"></table></div><div class="hint" id="h-sp"></div></div>
+  <div class="panel punch-panel"><h2>PUNCH LIST</h2><div class="tblwrap"><table id="t-sp"></table></div><div class="hint" id="h-sp"></div><button class="tbtn" id="prnsp" title="Print PUNCH LIST table">&#128424; PRINT PUNCH LIST</button></div>
   <div class="panel"><h2>ITR LIST</h2><div class="tblwrap"><table id="t-si"></table></div><div class="hint" id="h-si"></div></div>
  </div>
 </section>
@@ -750,6 +750,10 @@ try{countUp()}catch(e){}
 #ugbtn:hover{transform:translateY(-1px);filter:brightness(1.12)}
 #ugbtn:active{transform:scale(.93)}
 #ugbtn[disabled]{opacity:.55;cursor:wait}
+.tbtn{display:inline-flex;align-items:center;justify-content:center;margin-top:9px;padding:8px 18px;border:none;border-radius:9px;background:linear-gradient(135deg,#5b8dd6,#39679f 50%,#274a77);color:#fff;font-size:11px;font-weight:800;letter-spacing:1px;cursor:pointer;box-shadow:0 3px 10px -3px rgba(57,103,159,.8),inset 0 1px 0 rgba(255,255,255,.35);transition:transform .15s ease,filter .15s ease}
+.tbtn:hover{transform:translateY(-1px);filter:brightness(1.12)}
+.tbtn:active{transform:scale(.95)}
+@media print{body.prn-tsp .view{display:none!important}body.prn-tsp .view.on{display:block!important}body.prn-tsp header,body.prn-tsp .flow,body.prn-tsp footer,body.prn-tsp .hero,body.prn-tsp .hint,body.prn-tsp .tbtn,body.prn-tsp .fbtn,body.prn-tsp #v-sub .two .panel:not(.punch-panel){display:none!important}body.prn-tsp .panel.punch-panel{display:block!important}}
 @media print{body::before,#xlsbtn,#prnbtn,#svbtn,#rfbtn,header,.flow,footer,.tools,.hint,#syncbadge,#clock{display:none!important}body{background:#fff!important}.view{display:none!important}.view.on{display:block!important}.panel{background:#fff!important;border:1px solid #b9c2cd!important;box-shadow:none!important;margin:8px 0!important;break-inside:auto}.kpis{padding-top:8px!important}.tblwrap{max-height:none!important;overflow:visible!important;border:none!important}th{position:static!important;background:#e8edf3!important;color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}td{color:#000!important;background:#fff!important}tbody tr:nth-child(even) td{background:#f4f6f9!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}h1,h2,h3,p,span,b,div,td,th,li,label{color:#000!important;text-shadow:none!important}}
 </style>
 
@@ -773,6 +777,7 @@ btn.addEventListener('click',function(){btn.disabled=true;ensureXLSX(function(ok
 <script>
 (function(){"use strict";
 var pb=document.getElementById('prnbtn');if(pb)pb.addEventListener('click',function(){try{window.print();}catch(e){}});
+var ps=document.getElementById('prnsp');if(ps)ps.addEventListener('click',function(){try{document.body.classList.add('prn-tsp');setTimeout(function(){window.print();document.body.classList.remove('prn-tsp');},80);}catch(e){document.body.classList.remove('prn-tsp');}});
 var rb=document.getElementById('rfbtn');if(rb)rb.addEventListener('click',function(){try{rb.disabled=true;rb.style.opacity='.5';rb.textContent='⏳';fetch('/api/rebuild',{method:'POST'}).then(function(r){return r.json()}).then(function(d){if(d.ok){location.reload()}else{alert('Rebuild failed: '+(d.error||'Unknown error'));rb.textContent='↻';rb.disabled=false;rb.style.opacity='';}}).catch(function(e){alert('Server not running. Start with: python serve.py');rb.textContent='↻';rb.disabled=false;rb.style.opacity='';});}catch(e){location.reload()}});
 var ub=document.getElementById('ugbtn');if(ub)ub.addEventListener('click',function(){try{ub.disabled=true;ub.style.opacity='.5';ub.textContent='⏳ WORKING...';fetch('/api/update-all',{method:'POST'}).then(function(r){return r.json()}).then(function(d){if(d.ok){alert('✅ DONE!\n\n'+d.steps.join('\n'));location.reload()}else{alert('❌ FAILED:\n\n'+d.steps.join('\n')+'\n\n'+(d.error||''));ub.textContent='⬆ UPDATE';ub.disabled=false;ub.style.opacity='';}}).catch(function(e){alert('Server not running. Start with:\npython serve.py\n\nThen open http://localhost:8080');ub.textContent='⬆ UPDATE';ub.disabled=false;ub.style.opacity='';});}catch(e){}});
 var sb=document.getElementById('svbtn');
