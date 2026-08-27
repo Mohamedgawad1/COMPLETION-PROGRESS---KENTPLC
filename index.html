@@ -712,7 +712,7 @@ function openMenu(th,tid,ci){closeMenu();const tb=document.getElementById(tid);i
  const fl=m.querySelector('.fl');
  function draw(q){q=(q||'').toLowerCase();fl.innerHTML='';colVals(tb,ci).filter(v=>v[0].toLowerCase().includes(q)).forEach(v=>{const l=document.createElement('label');l.className='fitem';
   l.innerHTML='<input type="checkbox"'+(cur.has(v[0])?' checked':'')+'><span>'+esc(v[0])+'</span><i>'+v[1]+'</i>';
-  l.querySelector('input').addEventListener('change',ev=>{ev.target.checked?cur.add(v[0]):cur.delete(v[0])});fl.appendChild(l)});
+  l.querySelector('input').addEventListener('change',ev=>{ev.target.checked?cur.add(v[0]):cur.delete(v[0]);FILTERS[tid]=FILTERS[tid]||{};FILTERS[tid][ci]=cur;applyFilters(tid);syncTh(tb)});fl.appendChild(l)});
   if(!fl.children.length)fl.innerHTML='<div style="padding:10px;text-align:center;color:#8a97a5">No match</div>'}
  m.querySelector('.fh input').addEventListener('input',e=>draw(e.target.value));
  m.querySelector('[data-a=all]').addEventListener('click',()=>{if(FILTERS[tid])delete FILTERS[tid][ci];applyFilters(tid);syncTh(tb);closeMenu()});
