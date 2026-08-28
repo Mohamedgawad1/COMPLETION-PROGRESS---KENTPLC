@@ -80,7 +80,16 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 return
             steps.append('Git commit OK')
 
-            # Step 4: git push
+            # Step 4: sync with remote (may contain platform_state.json commits
+            # made online from the browser) then push
+            steps.append('Git sync main...')
+            r = subprocess.run(['git', 'pull', '--rebase', '--no-edit', 'origin', 'main'],
+                               capture_output=True, text=True, timeout=60, cwd=DIR)
+            if r.returncode != 0:
+                self._json_response(500, {'ok': False, 'error': f'git sync failed: {r.stderr[-300:]}', 'steps': steps})
+                return
+
+            # Step 5: git push
             steps.append('Git push...')
             r = subprocess.run(['git', 'push', 'origin', 'main', '--no-verify'], capture_output=True, text=True, timeout=60, cwd=DIR)
             if r.returncode != 0:
