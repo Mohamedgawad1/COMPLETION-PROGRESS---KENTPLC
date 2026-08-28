@@ -141,7 +141,7 @@ header,#wrap,.flow,footer{position:relative;z-index:1}
  <div><h1>PS5 <span>COMPLETION PLATFORM</span></h1><div class="meta">Report Date: 28-08-26    |    Source: PS-5 COMPLETIONS DPR SUMMERY -28-08-26.xlsx</div></div>
  <div id="clock"></div>
  <div id="syncbadge">&#9679; SYNCED TO EXCEL</div>
- <button id="xlsbtn" title="DOWNLOAD FULL EXCEL (all 8 pages + colours + links)">&#11015;</button><button id="prnbtn" title="PRINT">&#128424;</button><button id="svbtn" title="SAVE">&#128190;</button><button id="cloudbtn" title="RABT: اربط الحفظ الأون لاين ع المنصة">&#9729;</button><button id="rfbtn" title="REFRESH / UPDATE">&#8635;</button><button id="ugbtn" title="UPDATE ALL: Rebuild + Push">&#11014; UPDATE</button><button id="lgbtn" title="SIGN IN TO EDIT">&#128274;</button>
+ <button id="xlsbtn" title="DOWNLOAD FULL EXCEL (all 8 pages + colours + links)">&#11015;</button><button id="prnbtn" title="PRINT">&#128424;</button><button id="svbtn" title="SAVE">&#128190;</button><button id="cloudbtn" title="RABT: اربط الحفظ الأون لاين ع المنصة">&#9729;</button><button id="rfbtn" title="REFRESH / UPDATE">&#8635;</button><button id="lgbtn" title="SIGN IN TO EDIT">&#128274;</button>
 </header>
 <div class="flow">
  <button class="step on" data-v="dash">1 &middot; DASHBOARD</button>
@@ -765,10 +765,6 @@ try{countUp()}catch(e){}
 #xlsbtn:hover{transform:translateY(-2px) scale(1.08)}
 #xlsbtn:active{transform:scale(.94)}
 #xlsbtn[disabled]{opacity:.55;cursor:wait}
-#ugbtn{width:auto;padding:0 14px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:none;border-radius:50px;color:#fff;font-size:10px;font-weight:800;letter-spacing:.8px;cursor:pointer;margin-left:8px;flex:0 0 auto;background:linear-gradient(135deg,#d95b17,#c2610c 55%,#8b4513);box-shadow:0 3px 10px -3px rgba(217,91,23,.8),inset 0 1px 0 rgba(255,255,255,.35);transition:transform .15s ease,filter .15s ease}
-#ugbtn:hover{transform:translateY(-1px);filter:brightness(1.12)}
-#ugbtn:active{transform:scale(.93)}
-#ugbtn[disabled]{opacity:.55;cursor:wait}
 @media print{body::before,#xlsbtn,#prnbtn,#svbtn,#rfbtn,header,.flow,footer,.tools,.hint,#syncbadge,#clock{display:none!important}body{background:#fff!important}.view{display:none!important}.view.on{display:block!important}.panel{background:#fff!important;border:1px solid #b9c2cd!important;box-shadow:none!important;margin:8px 0!important;break-inside:auto}.kpis{padding-top:8px!important}.tblwrap{max-height:none!important;overflow:visible!important;border:none!important}th{position:static!important;background:#e8edf3!important;color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}td{color:#000!important;background:#fff!important}tbody tr:nth-child(even) td{background:#f4f6f9!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}h1,h2,h3,p,span,b,div,td,th,li,label{color:#000!important;text-shadow:none!important}}
 </style>
 
@@ -802,7 +798,6 @@ btn.addEventListener('click',function(){
 (function(){"use strict";
 var pb=document.getElementById('prnbtn');if(pb)pb.addEventListener('click',function(){try{window.print();}catch(e){}});
 var rb=document.getElementById('rfbtn');if(rb)rb.addEventListener('click',function(){try{rb.disabled=true;rb.style.opacity='.5';rb.textContent='⏳';fetch('/api/rebuild',{method:'POST'}).then(function(r){return r.json()}).then(function(d){if(d.ok){location.reload()}else{alert('Rebuild failed: '+(d.error||'Unknown error'));rb.textContent='↻';rb.disabled=false;rb.style.opacity='';}}).catch(function(e){alert('Server not running. Start with: python serve.py');rb.textContent='↻';rb.disabled=false;rb.style.opacity='';});}catch(e){location.reload()}});
-var ub=document.getElementById('ugbtn');if(ub)ub.addEventListener('click',function(){if(ub.dataset.busy)return;ub.dataset.busy=1;ub.disabled=true;ub.style.opacity='.6';ub.innerHTML='&#9203; WORKING...';fetch('/api/update-all',{method:'POST'}).then(function(r){return r.json()}).then(function(d){if(d.ok){try{$('syncbadge').textContent='&#9203; UPDATED - reloading...';$('syncbadge').classList.remove('off')}catch(e){}ub.innerHTML='&#9989; DONE';ub.style.background='linear-gradient(135deg,#2fbe6e,#1f9d55 50%,#136b3a)';ub.disabled=true;ub.style.opacity='1';setTimeout(function(){location.reload()},1200);}else{alert('UPDATE FAILED:\n\n'+(d.steps||[]).join('\n')+'\n\n'+(d.error||''));ub.innerHTML='&#11014; UPDATE';ub.disabled=false;ub.style.opacity='';delete ub.dataset.busy;}}).catch(function(e){alert('UPDATE needs the local server.\n\nStart it:\npython serve.py\n\nThen open: http://localhost:8080');ub.innerHTML='&#11014; UPDATE';ub.disabled=false;ub.style.opacity='';delete ub.dataset.busy;}).catch(function(e){});});
 var sb=document.getElementById('svbtn');
 function post(sh,id,patch){try{fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({sheet:sh,id:id},patch))}).catch(function(){});}catch(e){}}
 function resave(){var n=0,i,k,st;try{for(i=0;i<localStorage.length;i++){k=localStorage.key(i);if(!k||k.indexOf('xstate_')!==0)continue;var sh=k.slice(7);try{st=JSON.parse(localStorage.getItem(k)||'{}');}catch(e){continue;}for(var id in st){var v=st[id];if(id==='_c'){for(var j in v){post(sh,j,{color:v[j]});n++;}}else if(id==='_e'){for(var j2 in v){var o=v[j2];for(var c in o){post(sh,j2,{col:c,value:o[c]});n++;}}}else{post(sh,id,{note:v});n++;}}}}catch(e){}
