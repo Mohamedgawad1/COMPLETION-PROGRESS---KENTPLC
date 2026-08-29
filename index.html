@@ -229,7 +229,6 @@ header,#wrap,.flow,footer{position:relative;z-index:1}
  <div class="panel">
   <h2 style="border-color:#2e7d32">RFC Complete &mdash; Subsystems at 100%</h2>
   <div class="tblwrap"><table id="t-done"></table></div><div class="hint" id="h-done"></div>
- <div style="margin-top:12px"><button type="button" style="background:#2e7d32;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-weight:700;font-size:14px;cursor:pointer" onclick="xadd()">+ ADD ROW</button><small style="margin-left:10px;color:#666">Type the system code (e.g. 60-01) in the new row then press Enter — the row auto-fills from RFC and is saved for everyone.</small></div>
  </div>
 </section>
 
@@ -268,7 +267,7 @@ const GHA='https://api.github.com/repos/Mohamedgawad1/PS5-COMPLETION-PLATFORM/co
 let ct=null;
 function cloudBadge(on,msg){try{const b=$('syncbadge');if(on){b.classList.remove('off');b.innerHTML='&#9679; '+msg;}else{b.classList.add('off');b.textContent='&#9679; '+msg;}}catch(e){}}
 function mergeCloud(st){try{const cells=st.cells||{},notes=st.notes||{},colors=st.colors||{};const shs={};for(const s in cells)shs[s]=1;for(const s in notes)shs[s]=1;for(const s in colors)shs[s]=1;for(const s in shs){const m0=(OVR[s]=OVR[s]||{}),n0=(NOTES[s]=NOTES[s]||{}),p0=(PCOL[s]=PCOL[s]||{});const cm=cells[s]||{};for(const id in cm){const m=m0[id]=m0[id]||{};const cols=cm[id]||{};for(const c in cols){if(m[c]===undefined)m[c]=cols[c];}}const nm=notes[s]||{};for(const id in nm){if(n0[id]===undefined)n0[id]=nm[id];}const pm=colors[s]||{};for(const id in pm){if(p0[id]===undefined)p0[id]=pm[id];}}}catch(e){}}
-function pullCloud(){try{fetch(GHRAW+'?t='+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json()}).then(st=>{mergeCloud(st);const a=document.activeElement;const editing=a&&a.classList?(a.classList.contains('edt')||a.classList.contains('ni')||a.classList.contains('addcode')):false;if(!editing&&RENDER&&RENDER[V])RENDER[V]();cloudBadge(true,'SAVED ON PLATFORM');}).catch(()=>{});}catch(e){}}
+function pullCloud(){try{fetch(GHRAW+'?t='+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json()}).then(st=>{mergeCloud(st);const a=document.activeElement;const editing=a&&a.classList?(a.classList.contains('edt')||a.classList.contains('ni')):false;if(!editing&&RENDER&&RENDER[V])RENDER[V]();cloudBadge(true,'SAVED ON PLATFORM');}).catch(()=>{});}catch(e){}}
 function pushCloud(){try{const tk=(localStorage.getItem('gh_token')||EMB).trim();const build=()=>{const cells={},notes={},colors={};for(const s in OVR)for(const id in OVR[s])(cells[s]=cells[s]||{})[id]=OVR[s][id];for(const s in NOTES)for(const id in NOTES[s])(notes[s]=notes[s]||{})[id]=NOTES[s][id];for(const s in PCOL)for(const id in PCOL[s])if(PCOL[s][id])(colors[s]=colors[s]||{})[id]=PCOL[s][id];return {cells:cells,notes:notes,colors:colors};};const get=()=>fetch(GHA,{headers:{'Authorization':'token '+tk,'Accept':'application/vnd.github+json'}}).then(r=>Promise.all([r.status,r.json().catch(()=>({}))]));const put=sha=>fetch(GHA,{method:'PUT',headers:{'Authorization':'token '+tk,'Content-Type':'application/json'},body:JSON.stringify({message:'platform sync '+new Date().toISOString().slice(0,19),content:btoa(unescape(encodeURIComponent(JSON.stringify(build())))),sha:sha})}).then(r=>Promise.all([r.status,r.json().catch(()=>({}))]));const attempt=(meta,n)=>{if(n>3){cloudBadge(false,'SYNC CONFLICT - try again');return;}try{const cur=JSON.parse(decodeURIComponent(escape(atob((meta.content||'').replace(/\n/g,'')))));mergeCloud(cur||{});}catch(e){}put(meta.sha).then(pair=>{const st=pair[0],d=pair[1];if(st===200&&d.content){cloudBadge(true,'SAVED ON PLATFORM');}else if(st===409){get().then(p2=>attempt(p2[1],n+1));}else{cloudBadge(false,'PUSH FAILED');}});};get().then(p1=>attempt(p1[1],0)).catch(()=>cloudBadge(false,'PENDING - retry'));}catch(e){}}
 function pushCloudSoon(){if(ct)clearTimeout(ct);ct=setTimeout(pushCloud,1200);}
 (function(){const cb=document.getElementById('cloudbtn');if(cb)cb.addEventListener('click',function(){const tk=(window.prompt('RABT - paste your GitHub token (from any of the 3 accounts)')||'').trim();if(!tk)return;localStorage.setItem('gh_token',tk);cloudBadge(true,'ONLINE - connected');pushCloud();});})();
@@ -527,7 +526,7 @@ function renderList(w){
 }
 function renderDone(){
  const SH='RFC PROGRESS';
- const d=RFC.filter(x=>(x.tot!==''&&x.tot>=100)||x.signed==='COMPLETE'||x.signed==='PARTIAL'||ovv(SH,x.sid,'*ADD','')==='1');
+ const d=RFC.filter(x=>(x.tot!==''&&x.tot>=100)||x.signed==='COMPLETE'||x.signed==='PARTIAL');
  const N=NOTES[SH]||{};
  let h='<tr><th>#</th><th>SUB SYSTEM</th><th>TOTAL %</th><th>MILESTONE</th><th>RFC SIGNED</th><th>WALKDOWN STATUS</th><th>MY REMARKS</th></tr>';
  let rows='';
@@ -543,7 +542,6 @@ const sg7=(x.signed||'').toString().trim().toUpperCase();
   rows+=edt(SH,x.sid,'STATUS',ovv(SH,x.sid,'STATUS',x.wd),'style="text-align:center"');
   rows+='<td><input class="ni" style="width:220px" placeholder="+ remark..." value="'+esc(N[x.sid]||'')+'"></td></tr>';
  });
- rows+=(EXTD||[]).map((o,i)=>xrow(o,i)).join('');
  $('t-done').innerHTML='<thead>'+h+'</thead><tbody>'+(rows||emptyRow())+'</tbody>';
  $('h-done').textContent=d.length+' of '+RFC.length+' subsystems at 100%';
 }
@@ -618,13 +616,7 @@ function renderEit9(){
  $('t-eit9').innerHTML=h?'<thead>'+h+'</thead><tbody>'+rows+'</tbody>':'<tr><td colspan="8"><div class="empty">No open E/I/T tasks</div></td></tr>';
  $('h-eit9').textContent=open.length+' open task(s) out of '+I.length+' total E/I/T (CPP AGI)';
 }
-const var EXTD=[];try{EXTD=JSON.parse(localStorage.getItem('xextd')||'[]')}catch(e){}
-function xpersist(){try{localStorage.setItem('xextd',JSON.stringify(EXTD))}catch(e){}}
-function xrow(o,i){const SH='RFC PROGRESS';return '<tr data-id="'+esc(o.id)+'" data-sh="'+SH+'">'+'<td style="text-align:center;font-weight:700;background:#fff2cc">&#9650;</td>'+'<td style="min-width:280px"><input class="addcode" data-x="'+i+'" style="width:250px" placeholder="Type system code (e.g. 60-01) then Enter" value="'+esc(o.code||'')+'"></td>'+'<td style="text-align:center;font-weight:700">-</td>'+edt(SH,o.id,'Milestone','-')+edt(SH,o.id,'SIGNED','-','style="text-align:center;font-weight:700"')+edt(SH,o.id,'STATUS','-','style="text-align:center"')+'<td><input class="ni" style="width:220px" placeholder="+ remark..." value=""></td></tr>';}
-function xadd(){EXTD.push({id:'X'+Date.now(),code:''});xpersist();RENDER.done();}
-function xchg(k,el){if(!EXTD[k])return;EXTD[k].code=el.value;xpersist();const v=(EXTD[k].code||'').trim().toUpperCase();if(!v){el.select();return;}const SH='RFC PROGRESS';const ex=RFC.filter(x=>(x.sid||'').toUpperCase()===v);const m=ex.length?ex:RFC.filter(x=>(x.sid||'').toUpperCase().indexOf(v)>-1||(x.name||'').toUpperCase().indexOf(v)>-1);if(m.length){const sid=m[0].sid;(OVR[SH]=OVR[SH]||{})[sid]=OVR[SH][sid]||{};OVR[SH][sid]['*ADD']='1';save(SH,sid,{col:'*ADD',value:'1'});EXTD.splice(k,1);xpersist();RENDER.done();return;}el.select();}
-document.addEventListener('change',function(e){if(e.target&&e.target.classList&&e.target.classList.contains('addcode'))xchg(Number(e.target.dataset.x),e.target);});
-RENDER={dash:null,rfc:renderRfc,blk:renderBlk,pu:()=>renderList('pu'),it:()=>renderList('it'),sub:renderSub,done:renderDone,cables:renderCables,eit9:renderEit9};
+const RENDER={dash:null,rfc:renderRfc,blk:renderBlk,pu:()=>renderList('pu'),it:()=>renderList('it'),sub:renderSub,done:renderDone,cables:renderCables,eit9:renderEit9};
 function countUp(){
  document.querySelectorAll('#v-dash .kpi b').forEach(el=>{
   const t=el.textContent;
