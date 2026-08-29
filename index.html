@@ -88,6 +88,8 @@ tbody tr:hover td{background:#fff5e3}
 .cb{width:18px;height:18px;border-radius:50%;border:2px solid #cbd5e0;cursor:pointer;background:#fff;padding:0;transition:.15s}
 .cb:hover{transform:scale(1.18);border-color:var(--acc)}
 .ni{width:160px;border:1px dashed #b8c4d0;border-radius:6px;padding:3px 7px;font-size:11.5px;background:transparent;font-family:inherit;transition:.15s}
+.edt{white-space:pre-wrap}
+textarea.ni{white-space:pre-wrap;resize:vertical;min-height:26px}
 .ni:focus{border:1px solid var(--acc);background:#fffdf2;outline:none}
 .saved{color:#2e7d32!important;font-weight:600}
 .hint{font-size:11px;color:#789;padding:6px 2px}
@@ -851,6 +853,7 @@ var pp=document.getElementById('lgpass');if(pp)pp.addEventListener('keydown',fun
 applyAll();
 if(ONLINE){try{pullCloud();}catch(e){}}
 (function(){const hn=document.querySelector('header');const sy=()=>{if(hn)document.documentElement.style.setProperty('--hdr',hn.offsetHeight+'px');};sy();window.addEventListener('resize',sy);})();
+new MutationObserver(()=>{document.querySelectorAll('input.ni').forEach(inp=>{const ta=document.createElement('textarea');ta.className=inp.className;ta.placeholder=inp.placeholder;ta.rows=1;ta.style.width=(inp.offsetWidth||160)+'px';ta.value=inp.value;inp.parentNode.replaceChild(ta,inp);});}).observe(document.body,{childList:true,subtree:true});
 if(ONLINE)setInterval(()=>{if(document.hidden)return;try{pullCloud();}catch(e){}},5000);
 })();
 </script>
