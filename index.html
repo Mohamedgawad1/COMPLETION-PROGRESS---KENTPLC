@@ -263,6 +263,7 @@ function mergeCloud(st){try{const cells=st.cells||{},notes=st.notes||{},colors=s
 function pullCloud(){try{fetch(GHRAW+'?t='+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json()}).then(st=>{mergeCloud(st);if(RENDER&&RENDER[V])RENDER[V]();cloudBadge(!!localStorage.getItem('gh_token'),localStorage.getItem('gh_token')?'SAVED ON PLATFORM':'SET TOKEN -> RABT');}).catch(()=>{});}catch(e){}}
 function pushCloud(){try{const tk=(localStorage.getItem('gh_token')||'').trim();if(!tk){cloudBadge(false,'OFFLINE - SET TOKEN');return;}const build=()=>{const cells={},notes={},colors={};for(const s in OVR)for(const id in OVR[s])(cells[s]=cells[s]||{})[id]=OVR[s][id];for(const s in NOTES)for(const id in NOTES[s])(notes[s]=notes[s]||{})[id]=NOTES[s][id];for(const s in PCOL)for(const id in PCOL[s])if(PCOL[s][id])(colors[s]=colors[s]||{})[id]=PCOL[s][id];return {cells:cells,notes:notes,colors:colors};};const get=()=>fetch(GHA,{headers:{'Authorization':'token '+tk,'Accept':'application/vnd.github+json'}}).then(r=>Promise.all([r.status,r.json().catch(()=>({}))]));const put=sha=>fetch(GHA,{method:'PUT',headers:{'Authorization':'token '+tk,'Content-Type':'application/json'},body:JSON.stringify({message:'platform sync '+new Date().toISOString().slice(0,19),content:btoa(unescape(encodeURIComponent(JSON.stringify(build())))),sha:sha})}).then(r=>Promise.all([r.status,r.json().catch(()=>({}))]));const attempt=(meta,n)=>{if(n>3){cloudBadge(false,'SYNC CONFLICT - try again');return;}try{const cur=JSON.parse(decodeURIComponent(escape(atob((meta.content||'').replace(/\n/g,'')))));mergeCloud(cur||{});}catch(e){}put(meta.sha).then(pair=>{const st=pair[0],d=pair[1];if(st===200&&d.content){cloudBadge(true,'SAVED ON PLATFORM');}else if(st===409){get().then(p2=>attempt(p2[1],n+1));}else{cloudBadge(false,'PUSH FAILED');}});};get().then(p1=>attempt(p1[1],0)).catch(()=>cloudBadge(false,'OFFLINE - will retry'));}catch(e){}}
 function pushCloudSoon(){if(ct)clearTimeout(ct);ct=setTimeout(pushCloud,4000);}
+(function(){const cb=document.getElementById('cloudbtn');if(cb)cb.addEventListener('click',function(){const tk=(window.prompt('RABT - paste your GitHub token (from any of the 3 accounts)')||'').trim();if(!tk)return;localStorage.setItem('gh_token',tk);cloudBadge(true,'ONLINE - connected');pushCloud();});})();
 {const s=document.createElement('style');s.textContent='.edt:focus{outline:2px solid #ed7d31;background:#fffbe6}.edt.saved{background:#c6efce !important}.edt:hover{box-shadow:inset 0 0 0 1px #cbd5e0}';document.head.appendChild(s);}
 function ovv(sh,id,col,def){const o=OVR[sh];const v=(o&&o[id])?o[id][col]:undefined;if(v===undefined||v===null||v==='')return def;return v;}
 function edt(sh,id,col,val,st,cls){const o=((OVR[sh]||{})[id]||{})[col];if(o!==undefined)val=o;return '<td class="edt '+(cls||'')+'" contenteditable="true" spellcheck="false" data-sh="'+sh+'" data-id="'+esc(id)+'" data-col="'+esc(col)+'" '+(st||'')+'>'+esc(val??'')+'</td>';}
@@ -273,7 +274,9 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const doneI=s=>{s=String(s||'').trim();if(/to\s*be/i.test(s))return false;return /^comp/i.test(s)||/^closed$/i.test(s);};
 const pcol=p=>p>=90?'#2e7d32':(p>=50?'#ed7d31':(p>0?'#c00000':'#8a97a5'));
-if(!navigator.onLine||location.protocol==='file:'||location.host.indexOf('github.io')>-1){$('syncbadge').textContent='● OFFLINE - saved locally';$('syncbadge').classList.add('off');ONLINE=false;}
+if(!navigator.onLine||location.protocol==='file:'){$('syncbadge').textContent='● OFFLINE - saved locally';$('syncbadge').classList.add('off');ONLINE=false;}
+else if(localStorage.getItem('gh_token')){cloudBadge(true,'ONLINE - connected');}
+else{cloudBadge(false,'ONLINE - press ☁ RABT to set token');}
 function save(sh,id,patch){
  try{
   const key='xstate_'+sh;let st={};try{st=JSON.parse(localStorage.getItem(key)||'{}')}catch(e){}
@@ -283,7 +286,7 @@ function save(sh,id,patch){
   localStorage.setItem(key,JSON.stringify(st));
  }catch(e){}
  pushCloudSoon();
- if(!ONLINE)return;
+ if(!ONLINE||location.protocol==='file:'||location.host.indexOf('github.io')>-1)return; // live site -> cloud via pushCloudSoon
  fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json'},
   body:JSON.stringify(Object.assign({sheet:sh,id:id},patch))})
  .then(r=>{if(!r.ok)throw 0;$('syncbadge').classList.remove('off');$('syncbadge').innerHTML='● SYNCED TO EXCEL';})
@@ -842,6 +845,7 @@ var b=document.getElementById('lgbtn');if(b)b.addEventListener('click',function(
 var go=document.getElementById('lgo');if(go)go.addEventListener('click',tryIn);
 var pp=document.getElementById('lgpass');if(pp)pp.addEventListener('keydown',function(e){if(e.key==='Enter')tryIn();});
 applyAll();
+if(ONLINE){try{pullCloud();}catch(e){}}
 })();
 </script>
 </body></html>
