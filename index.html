@@ -38,7 +38,7 @@ th.act .fbtn{background:var(--acc);border-color:#fff}
 .fitem span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:none}
 .fitem i{color:#8a97a5;font-style:normal;font-size:9.5px}
 #syncbadge.off{background:#c2610c}
-.flow{display:flex;flex-wrap:wrap;gap:3px;background:rgba(255,255,255,.94);backdrop-filter:blur(6px) saturate(1.15);padding:4px 16px;border-bottom:1px solid var(--line);position:sticky;top:50px;z-index:60}
+.flow{display:flex;flex-wrap:wrap;gap:3px;background:rgba(255,255,255,.94);backdrop-filter:blur(6px) saturate(1.15);padding:4px 16px;border-bottom:1px solid var(--line);position:sticky;top:var(--hdr,68px);z-index:60}
 .step{border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:10.5px;color:#44566c;background:transparent;padding:6px 14px;border-radius:999px;transition:.15s;letter-spacing:.5px;text-transform:uppercase}
 .step:hover{background:#e8edf4}
 .step.on{background:linear-gradient(135deg,#0b2239,#155a9e);color:#fff;box-shadow:0 3px 9px rgba(11,34,57,.35)}
@@ -851,6 +851,7 @@ var go=document.getElementById('lgo');if(go)go.addEventListener('click',tryIn);
 var pp=document.getElementById('lgpass');if(pp)pp.addEventListener('keydown',function(e){if(e.key==='Enter')tryIn();});
 applyAll();
 if(ONLINE){try{pullCloud();}catch(e){}}
+(function(){const hn=document.querySelector('header');const sy=()=>{if(hn)document.documentElement.style.setProperty('--hdr',hn.offsetHeight+'px');};sy();window.addEventListener('resize',sy);})();
 })();
 </script>
 </body></html>
