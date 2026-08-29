@@ -852,6 +852,7 @@ var pp=document.getElementById('lgpass');if(pp)pp.addEventListener('keydown',fun
 applyAll();
 if(ONLINE){try{pullCloud();}catch(e){}}
 (function(){const hn=document.querySelector('header');const sy=()=>{if(hn)document.documentElement.style.setProperty('--hdr',hn.offsetHeight+'px');};sy();window.addEventListener('resize',sy);})();
+if(ONLINE)setInterval(()=>{if(document.hidden)return;try{pullCloud();}catch(e){}},60000);
 })();
 </script>
 </body></html>
