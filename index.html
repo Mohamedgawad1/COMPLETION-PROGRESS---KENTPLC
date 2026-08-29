@@ -835,9 +835,9 @@ if(sb)sb.addEventListener('click',resave);
 <script>
 (function(){"use strict";
 var USERS={'MOHAMED ABDELGAWAD':'m123@','JABESTEEN':'j123@','ZEESHAN ANWAR':'z123@'};
-function get(k){try{return sessionStorage.getItem(k)}catch(e){return null}}
-function setk(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}
-function delk(k){try{sessionStorage.removeItem(k)}catch(e){}}
+function get(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function setk(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function delk(k){try{localStorage.removeItem(k)}catch(e){}}
 function authed(){return !!get('ps5who')}
 function applyAll(){var on=authed();var b=document.getElementById('lgbtn');if(b){b.innerHTML=on?'&#128275;':'&#128274;';b.style.background=on?'linear-gradient(135deg,#2fbe6e,#136b3a)':'linear-gradient(135deg,#27405c,#16283c)';b.style.color=on?'#fff':'#ffc000';b.title=on?('EDITING AS '+get('ps5who')+' - CLICK TO SIGN OUT'):'SIGN IN TO EDIT';}
 var nodes=document.querySelectorAll('.edt');for(var i=0;i<nodes.length;i++){nodes[i].contentEditable=on?'true':'false';}
