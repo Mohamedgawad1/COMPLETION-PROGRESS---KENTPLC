@@ -229,6 +229,7 @@ header,#wrap,.flow,footer{position:relative;z-index:1}
  <div class="panel">
   <h2 style="border-color:#2e7d32">RFC Complete &mdash; Subsystems at 100%</h2>
   <div class="tblwrap"><table id="t-done"></table></div><div class="hint" id="h-done"></div>
+ <div style="margin-top:12px"><button type="button" style="background:#2e7d32;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-weight:700;font-size:14px;cursor:pointer" onclick="xadd()">+ ADD ROW</button><small style="margin-left:10px;color:#666">Type the system code (e.g. 60-01) in the new row then press Enter — the row auto-fills from RFC and is saved for everyone.</small></div>
  </div>
 </section>
 
@@ -526,7 +527,7 @@ function renderList(w){
 }
 function renderDone(){
  const SH='RFC PROGRESS';
- const d=RFC.filter(x=>(x.tot!==''&&x.tot>=100)||x.signed==='COMPLETE'||x.signed==='PARTIAL');
+ const d=RFC.filter(x=>(x.tot!==''&&x.tot>=100)||x.signed==='COMPLETE'||x.signed==='PARTIAL'||ovv(SH,x.sid,'*ADD','')==='1');
  const N=NOTES[SH]||{};
  let h='<tr><th>#</th><th>SUB SYSTEM</th><th>TOTAL %</th><th>MILESTONE</th><th>RFC SIGNED</th><th>WALKDOWN STATUS</th><th>MY REMARKS</th></tr>';
  let rows='';
@@ -542,6 +543,7 @@ const sg7=(x.signed||'').toString().trim().toUpperCase();
   rows+=edt(SH,x.sid,'STATUS',ovv(SH,x.sid,'STATUS',x.wd),'style="text-align:center"');
   rows+='<td><input class="ni" style="width:220px" placeholder="+ remark..." value="'+esc(N[x.sid]||'')+'"></td></tr>';
  });
+ rows+=(EXTD||[]).map((o,i)=>xrow(o,i)).join('');
  $('t-done').innerHTML='<thead>'+h+'</thead><tbody>'+(rows||emptyRow())+'</tbody>';
  $('h-done').textContent=d.length+' of '+RFC.length+' subsystems at 100%';
 }
@@ -616,7 +618,13 @@ function renderEit9(){
  $('t-eit9').innerHTML=h?'<thead>'+h+'</thead><tbody>'+rows+'</tbody>':'<tr><td colspan="8"><div class="empty">No open E/I/T tasks</div></td></tr>';
  $('h-eit9').textContent=open.length+' open task(s) out of '+I.length+' total E/I/T (CPP AGI)';
 }
-const RENDER={dash:null,rfc:renderRfc,blk:renderBlk,pu:()=>renderList('pu'),it:()=>renderList('it'),sub:renderSub,done:renderDone,cables:renderCables,eit9:renderEit9};
+const var EXTD=[];try{EXTD=JSON.parse(localStorage.getItem('xextd')||'[]')}catch(e){}
+function xpersist(){try{localStorage.setItem('xextd',JSON.stringify(EXTD))}catch(e){}}
+function xrow(o,i){const SH='RFC PROGRESS';return '<tr data-id="'+esc(o.id)+'" data-sh="'+SH+'">'+'<td style="text-align:center;font-weight:700;background:#fff2cc">&#9650;</td>'+'<td style="min-width:280px"><input class="addcode" data-x="'+i+'" style="width:250px" placeholder="Type system code (e.g. 60-01) then Enter" value="'+esc(o.code||'')+'"></td>'+'<td style="text-align:center;font-weight:700">-</td>'+edt(SH,o.id,'Milestone','-')+edt(SH,o.id,'SIGNED','-','style="text-align:center;font-weight:700"')+edt(SH,o.id,'STATUS','-','style="text-align:center"')+'<td><input class="ni" style="width:220px" placeholder="+ remark..." value=""></td></tr>';}
+function xadd(){EXTD.push({id:'X'+Date.now(),code:''});xpersist();RENDER.done();}
+function xchg(k,el){if(!EXTD[k])return;EXTD[k].code=el.value;xpersist();const v=(EXTD[k].code||'').trim().toUpperCase();if(!v){el.select();return;}const SH='RFC PROGRESS';const ex=RFC.filter(x=>(x.sid||'').toUpperCase()===v);const m=ex.length?ex:RFC.filter(x=>(x.sid||'').toUpperCase().indexOf(v)>-1||(x.name||'').toUpperCase().indexOf(v)>-1);if(m.length){const sid=m[0].sid;(OVR[SH]=OVR[SH]||{})[sid]=OVR[SH][sid]||{};OVR[SH][sid]['*ADD']='1';save(SH,sid,{col:'*ADD',value:'1'});EXTD.splice(k,1);xpersist();RENDER.done();return;}el.select();}
+document.addEventListener('change',function(e){if(e.target&&e.target.classList&&e.target.classList.contains('addcode'))xchg(Number(e.target.dataset.x),e.target);});
+RENDER={dash:null,rfc:renderRfc,blk:renderBlk,pu:()=>renderList('pu'),it:()=>renderList('it'),sub:renderSub,done:renderDone,cables:renderCables,eit9:renderEit9};
 function countUp(){
  document.querySelectorAll('#v-dash .kpi b').forEach(el=>{
   const t=el.textContent;
