@@ -308,8 +308,24 @@ function allRFC(){return RFC.concat(Object.keys(ADDS).map(s=>ADDS[s]));}
 function refreshSubSelects(){try{fillSel('s-pu');fillSel('s-it');const sc=$('s-cab');if(sc){const cur=sc.value;const o0=document.createElement('option');o0.value='';o0.textContent='ALL SUB SYSTEMS';sc.innerHTML='';sc.appendChild(o0);const seen={};allOpts().forEach(x=>{if(seen[x.sid])return;seen[x.sid]=1;const o=document.createElement('option');o.value=x.sid;o.textContent=x.name;sc.appendChild(o);});sc.value=cur;}}catch(e){}}
 function addSub(){
  try{
-  const sid=(prompt('SUB SYSTEM CODE  (like PS5-99-01):')||'').trim().toUpperCase();
-  if(!sid)return;
+  const raw=(prompt('SUB SYSTEM CODE  (like 01-01):')||'').trim().toUpperCase().replace(/\s+/g,'');
+  if(!raw)return;
+  const pool=allRFC();
+  const candidates=['PS5-'+raw,raw];const seen={};let tgt=null;
+  for(const pp of candidates){if(!pp||seen[pp])continue;seen[pp]=1;const f=pool.find(x=>x.sid.toUpperCase()===pp);if(f){tgt=f;break;}}
+  if(!tgt){
+    const toks=raw.split('-').filter(Boolean);
+    if(toks.length>=2){
+      const hits=pool.map(x=>x.sid.toUpperCase()).filter(s=>s.endsWith('-'+toks.slice(-2).join('-')));
+      if(hits.length===1){tgt=pool.find(x=>x.sid.toUpperCase()===hits[0]);}
+    }
+  }
+  if(tgt){
+    alert('\u0645\u0648\u062c\u0648\u062f \u0628\u0627\u0644\u0641\u0639\u0644: '+tgt.sid+' - '+tgt.name+'\n\nTOTAL %: '+tgt.tot+'%  |  MILESTONE: '+((tgt.mile)||'--')+'\nSIGNED: '+((tgt.signed)||'-')+'  |  PRIORITY: '+((tgt.prio)||'-')+'\nBHMPS: '+((tgt.bhm)||'-')+'  |  EIT: '+((tgt.eit)||'-')+'\nBASELINE: '+((tgt.base)||'-')+'  |  RECOVERY: '+((tgt.rec)||'-')+'\nITRs: '+(tgt.it||0)+'  |  CLOSED: '+(tgt.ic||0)+'  |  BALANCE: '+(tgt.ib||0)+'\nWALKDOWN STATUS: '+((tgt.wd)||'-'));
+    try{if(typeof goSub==='function'){goSub(tgt.sid);}if(typeof show==='function'){show('sub');}}catch(e){}
+    return;
+  }
+  const sid='PS5-'+raw;
   if(RFC.some(x=>x.sid===sid)||ADDS[sid]){alert('\u0647\u0630\u0627 \u0627\u0644\u0643\u0648\u062f \u0645\u0648\u062c\u0648\u062f \u0641\u0639\u0644\u064b\u0627');return;}
   const nm=(prompt('SUB SYSTEM NAME:')||'').trim();
   if(!nm)return;
@@ -318,9 +334,10 @@ function addSub(){
   try{cloudBadge(true,'ADDED: '+sid);}catch(e){}
   if(RENDER&&RENDER[V])RENDER[V]();
  }catch(e){alert('add failed');}
+
 }
 (function(){const ab=document.getElementById('addsub');if(ab)ab.addEventListener('click',addSub);})();
-(function(){const st=document.createElement('style');st.textContent='.delsubre{background:#c00000;color:#fff;border:none;border-radius:6px;font-size:10px;line-height:1;padding:4px 7px;margin-left:6px;cursor:pointer;vertical-align:middle;font-weight:700}.delsubre:hover{background:#ff4d4d}';document.head.appendChild(st);})();
+(function(){const st=document.createElement('style');st.textContent='.delsubre{background:#c00000;color:#fff;border:none;border-radius:6px;font-size:10px;line-height:1;padding:4px 7px;margin-left:6px;cursor:pointer;vertical-align:middle;font-weight:700}.delsubre:hover{background:#ff4d4d}'.submeta{font-size:11px;color:#555;font-style:normal;font-weight:400;margin-top:5px}';document.head.appendChild(st);})();
 function delSub(sid){try{const nm=ADDS[sid]?ADDS[sid].name:sid;if(!confirm('حذف '+nm+' من المنصة؟'))return;delete ADDS[sid];DELADD[sid]=1;window.__adsch=1;refreshSubSelects();pushCloudSoon();try{cloudBadge(true,'DELETED: '+sid);}catch(e){}if(RENDER&&RENDER[V])RENDER[V]();}catch(e){}}
 document.addEventListener('click',function(e){const b=e.target&&e.target.closest?e.target.closest('.delsubre'):null;if(b){e.stopPropagation();e.preventDefault();delSub(b.getAttribute('data-id')||'');}},false);
 (function(){const f=document.querySelector('.flow'),h=document.querySelector('header');
@@ -393,7 +410,7 @@ function subRows(src,isP){
 }
 function renderSub(){
  const x=RFC.find(r=>r.sid===SUBCUR)||ADDS[SUBCUR]||{name:SUBCUR};
- $('sub-name').innerHTML='<span class="sidchip">'+esc(SUBCUR||'-')+'</span>'+esc(x.name||'SELECT A SUBSYSTEM');
+ $('sub-name').innerHTML='<span class="sidchip">'+esc(SUBCUR||'-')+'</span>'+esc(x.name||'SELECT A SUBSYSTEM')+'<div class="submeta">TOTAL: <b>'+esc(ovv('RFC PROGRESS',SUBCUR,'TOTAL %',x.tot))+'%</b> &nbsp;&middot;&nbsp; MILESTONE: <b>'+esc(ovv('RFC PROGRESS',SUBCUR,'Milestone',x.mile||'--'))+'</b></div>';
  const P=PUNCH.filter(r=>r[9]===SUBCUR);
  const I=ITR.filter(r=>r[9]===SUBCUR);
  const pc=P.filter(r=>{const s=String(r[5]).trim().toLowerCase();return s==='closed'||s==='completed'}).length;
