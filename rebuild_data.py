@@ -212,13 +212,13 @@ if dpr_files:
         
         dpr_data[sid] = {
             'priority': fmt_str(vals[1]),
-            'bhm': fmt_date(vals[2]),
-            'eit': fmt_date(vals[3]),
-            'base': fmt_date(vals[4]),
-            'rec': fmt_date(vals[5]),
-            'signed': fmt_date(vals[6]),
-            'mile': fmt_str(vals[7]),
-            'tot_pct': vals[8],  # keep raw for now
+            'bhm': fmt_str(vals[2]),
+            'eit': fmt_str(vals[3]),
+            'base': fmt_str(vals[4]),
+            'rec': fmt_date(vals[7]),
+            'signed': fmt_str(vals[8]),
+            'mile': fmt_str(vals[9]),
+            'tot_pct': vals[10],  # keep raw for now
             'b_total': fmt_num(vals[9]),
             'b_closed': fmt_num(vals[10]),
             'b_bal': fmt_num(vals[11]),
@@ -252,7 +252,7 @@ if dpr_files:
             'b3': fmt_num(vals[51]),  # CPY/EACOP blocking
             're1': fmt_str(vals[52]),  # EIT remarks
             're2': fmt_str(vals[53]),  # CPP remarks
-            're3': fmt_str(vals[55]),  # Walkdown/observation
+            're3': fmt_str(vals[54]),  # Walkdown remark text
         }
     
     wb_dpr.close()
