@@ -316,20 +316,26 @@ function addSub(){
   if(!tgt){
     const toks=raw.split('-').filter(Boolean);
     if(toks.length>=2){
-      const hits=pool.map(x=>x.sid.toUpperCase()).filter(s=>s.endsWith('-'+toks.slice(-2).join('-')));
-      if(hits.length===1){tgt=pool.find(x=>x.sid.toUpperCase()===hits[0]);}
+      const hits=pool.map(x=>x.sid.toUpperCase()).filter(s=>s.endsWith('-'+toks.slice(-2).join('-')));const uniq=[];
+      hits.forEach(s2=>{if(uniq.indexOf(s2)<0)uniq.push(s2);});
+      if(uniq.length===1){tgt=pool.find(x=>x.sid.toUpperCase()===uniq[0]);}
     }
   }
   if(tgt){
-    alert('\u0645\u0648\u062c\u0648\u062f \u0628\u0627\u0644\u0641\u0639\u0644: '+tgt.sid+' - '+tgt.name+'\n\nTOTAL %: '+tgt.tot+'%  |  MILESTONE: '+((tgt.mile)||'--')+'\nSIGNED: '+((tgt.signed)||'-')+'  |  PRIORITY: '+((tgt.prio)||'-')+'\nBHMPS: '+((tgt.bhm)||'-')+'  |  EIT: '+((tgt.eit)||'-')+'\nBASELINE: '+((tgt.base)||'-')+'  |  RECOVERY: '+((tgt.rec)||'-')+'\nITRs: '+(tgt.it||0)+'  |  CLOSED: '+(tgt.ic||0)+'  |  BALANCE: '+(tgt.ib||0)+'\nWALKDOWN STATUS: '+((tgt.wd)||'-'));
-    try{if(typeof goSub==='function'){goSub(tgt.sid);}if(typeof show==='function'){show('sub');}}catch(e){}
+    const sid=tgt.sid;
+    if(ADDS[sid]){alert('\u0627\u0644\u0635\u0641 \u0645\u0648\u062c\u0648\u062f \u0628\u0627\u0644\u0641\u0639\u0644: '+sid);return;}
+    if(DELADD[sid])delete DELADD[sid];
+    ADDS[sid]={sid:sid,name:tgt.name,prio:(tgt.prio||''),bhm:(tgt.bhm||''),eit:(tgt.eit||''),base:(tgt.base||''),rec:(tgt.rec||''),signed:(tgt.signed||''),mile:(tgt.mile||''),mile2:(tgt.mile2||''),tot:(tgt.tot||0),itrp:(tgt.itrp||0),b1:(tgt.b1||0),b2:(tgt.b2||0),b3:(tgt.b3||0),re1:(tgt.re1||''),re2:(tgt.re2||''),re3:(tgt.re3||''),wd:(tgt.wd||''),d:(tgt.d?tgt.d.map(function(o){return {t:o.t,c:o.c};}):[]),it:(tgt.it||0),ic:(tgt.ic||0),ib:(tgt.ib||0)};
+    window.__adsch=1;refreshSubSelects();pushCloudSoon();
+    try{cloudBadge(true,'ADDED ROW: '+sid+' - '+tgt.name);}catch(e){}
+    if(RENDER&&RENDER[V])RENDER[V]();
     return;
   }
   const sid='PS5-'+raw;
   if(RFC.some(x=>x.sid===sid)||ADDS[sid]){alert('\u0647\u0630\u0627 \u0627\u0644\u0643\u0648\u062f \u0645\u0648\u062c\u0648\u062f \u0641\u0639\u0644\u064b\u0627');return;}
   const nm=(prompt('SUB SYSTEM NAME:')||'').trim();
   if(!nm)return;
-  ADDS[sid]={sid:sid,name:sid+' - '+nm,prio:'',bhm:'',eit:'',base:'',rec:'',signed:'COMPLETE',mile:'',tot:100,itrp:0,b1:0,b2:0,b3:0,re1:'',re2:'',re3:'',wd:'',mile2:'',d:[],it:0,ic:0,ib:0};
+  ADDS[sid]={sid:sid,name:sid+' - '+nm,prio:'',bhm:'',eit:'',base:'',rec:'',signed:'',mile:'',tot:100,itrp:0,b1:0,b2:0,b3:0,re1:'',re2:'',re3:'',wd:'',mile2:'',d:[],it:0,ic:0,ib:0};
   window.__adsch=1;refreshSubSelects();pushCloudSoon();
   try{cloudBadge(true,'ADDED: '+sid);}catch(e){}
   if(RENDER&&RENDER[V])RENDER[V]();
@@ -566,7 +572,7 @@ function renderList(w){
 }
 function renderDone(){
  const SH='RFC PROGRESS';
- const d=allRFC().filter(x=>(x.tot!==''&&x.tot>=100)||(x.signed+'').trim().toUpperCase().indexOf('COMPLETE')>-1||(x.signed+'').trim().toUpperCase().indexOf('PARTIAL')>-1);
+ const d=allRFC().filter(x=>ADDS[x.sid]||(x.tot!==''&&x.tot>=100)||(x.signed+'').trim().toUpperCase().indexOf('COMPLETE')>-1||(x.signed+'').trim().toUpperCase().indexOf('PARTIAL')>-1);
  const N=NOTES[SH]||{};
  let h='<tr><th>#</th><th>SUB SYSTEM</th><th>TOTAL %</th><th>MILESTONE</th><th>RFC SIGNED</th><th>WALKDOWN STATUS</th><th>MY REMARKS</th></tr>';
  let rows='';
