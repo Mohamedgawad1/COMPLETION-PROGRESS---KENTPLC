@@ -337,7 +337,7 @@ function addSub(){
 
 }
 (function(){const ab=document.getElementById('addsub');if(ab)ab.addEventListener('click',addSub);})();
-(function(){const st=document.createElement('style');st.textContent='.delsubre{background:#c00000;color:#fff;border:none;border-radius:6px;font-size:10px;line-height:1;padding:4px 7px;margin-left:6px;cursor:pointer;vertical-align:middle;font-weight:700}.delsubre:hover{background:#ff4d4d}'.submeta{font-size:11px;color:#555;font-style:normal;font-weight:400;margin-top:5px}';document.head.appendChild(st);})();
+(function(){const st=document.createElement('style');st.textContent='.delsubre{background:#c00000;color:#fff;border:none;border-radius:6px;font-size:10px;line-height:1;padding:4px 7px;margin-left:6px;cursor:pointer;vertical-align:middle;font-weight:700}.delsubre:hover{background:#ff4d4d}.submeta{font-size:11px;color:#555;font-style:normal;font-weight:400;margin-top:5px}';document.head.appendChild(st);})();
 function delSub(sid){try{const nm=ADDS[sid]?ADDS[sid].name:sid;if(!confirm('حذف '+nm+' من المنصة؟'))return;delete ADDS[sid];DELADD[sid]=1;window.__adsch=1;refreshSubSelects();pushCloudSoon();try{cloudBadge(true,'DELETED: '+sid);}catch(e){}if(RENDER&&RENDER[V])RENDER[V]();}catch(e){}}
 document.addEventListener('click',function(e){const b=e.target&&e.target.closest?e.target.closest('.delsubre'):null;if(b){e.stopPropagation();e.preventDefault();delSub(b.getAttribute('data-id')||'');}},false);
 (function(){const f=document.querySelector('.flow'),h=document.querySelector('header');
