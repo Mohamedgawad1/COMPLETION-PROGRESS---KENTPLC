@@ -247,12 +247,12 @@ if dpr_files:
             'itr_closed': fmt_num(vals[42]),
             'itr_bal': fmt_num(vals[43]),
             'itr_pct': vals[44],
-            'b1': fmt_num(vals[49]),  # CPP-1 blocking
-            'b2': fmt_num(vals[50]),  # EIT blocking
-            'b3': fmt_num(vals[51]),  # CPY/EACOP blocking
-            're1': fmt_str(vals[52]),  # EIT remarks
-            're2': fmt_str(vals[53]),  # CPP remarks
-            're3': fmt_str(vals[54]),  # Walkdown remark text
+            'b1': fmt_num(vals[51]),  # BLOCKING ITRs CPP-1 (AZ)
+            'b2': fmt_num(vals[52]),  # BLOCKING ITRs EIT (BA)
+            'b3': fmt_num(vals[53]),  # BLOCKING ITRs CPY/EACOP (BB)
+            're1': fmt_str(vals[54]),  # REMARK EACOP (BC)
+            're2': fmt_str(vals[55]),  # REMARK CPP-EIT (BD)
+            're3': fmt_str(vals[56]),  # REMARK CPP-1 (BE)
         }
     
     wb_dpr.close()
