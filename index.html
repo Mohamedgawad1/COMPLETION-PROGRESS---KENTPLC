@@ -851,7 +851,7 @@ var b=document.getElementById('lgbtn');if(b)b.addEventListener('click',function(
 var go=document.getElementById('lgo');if(go)go.addEventListener('click',tryIn);
 var pp=document.getElementById('lgpass');if(pp)pp.addEventListener('keydown',function(e){if(e.key==='Enter')tryIn();});
 applyAll();
-if(ONLINE){try{pullCloud();}catch(e){}}
+if(ONLINE){setTimeout(()=>{try{const _h=()=>{for(const s in OVR)for(const id in OVR[s])for(const c in OVR[s][id])return true;for(const s in NOTES)for(const id in NOTES[s])return true;for(const s in PCOL)for(const id in PCOL[s])if(PCOL[s][id])return true;return false;};if(_h())pushCloud();else pullCloud();}catch(e){}},800);}
 (function(){const hn=document.querySelector('header');const sy=()=>{if(hn)document.documentElement.style.setProperty('--hdr',hn.offsetHeight+'px');};sy();window.addEventListener('resize',sy);})();
 new MutationObserver(()=>{document.querySelectorAll('input.ni').forEach(inp=>{const ta=document.createElement('textarea');ta.className=inp.className;ta.placeholder=inp.placeholder;ta.rows=1;ta.style.width=(inp.offsetWidth||160)+'px';ta.value=inp.value;inp.parentNode.replaceChild(ta,inp);});}).observe(document.body,{childList:true,subtree:true});
 if(ONLINE)setInterval(()=>{if(document.hidden)return;try{pullCloud();}catch(e){}},5000);
