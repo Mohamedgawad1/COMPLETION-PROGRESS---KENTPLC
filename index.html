@@ -283,9 +283,9 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const doneI=s=>{s=String(s||'').trim();if(/to\s*be/i.test(s))return false;return /^comp/i.test(s)||/^closed$/i.test(s);};
 const pcol=p=>p>=90?'#2e7d32':(p>=50?'#ed7d31':(p>0?'#c00000':'#8a97a5'));
-const LIVEVER='3';
+const LIVEVER='4';
 cloudBadge(true,'ONLINE - auto sync');
-(function(){try{const bt=document.getElementById('buildtag');if(bt)bt.textContent='LIVE v'+LIVEVER+' | '+new Date().toISOString().slice(0,16).replace('T',' ');const tkSafe=(localStorage.getItem('gh_token')||'').trim()||(EMB&&EMB.trim?EMB.trim():'');if(!tkSafe){cloudBadge(false,'NO TOKEN - press RABT');return;}fetch('https://api.github.com/user',{headers:{'Authorization':'token '+tkSafe,'Accept':'application/vnd.github+json'}}).then(r=>{if(r.ok){return r.json();}throw 0;}).then(u=>cloudBadge(true,'ONLINE - '+u.login)).catch(()=>{cloudBadge(false,'TOKEN DEAD - reloading...');setTimeout(function(){try{if(!sessionStorage.getItem('ps5_reload_done')){sessionStorage.setItem('ps5_reload_done','1');location.reload(true);}}catch(e){}},800);});}catch(e){}})();
+(function(){try{const bt=document.getElementById('buildtag');if(bt)bt.textContent='LIVE v'+LIVEVER+' | '+new Date().toISOString().slice(0,16).replace('T',' ');try{const v=localStorage.getItem('ps5_ver');if(v!==LIVEVER){localStorage.setItem('ps5_ver',LIVEVER);if(location.search.indexOf('v='+LIVEVER)<0){location.replace(location.pathname+'?v='+LIVEVER);return;}}}catch(e){}const tkSafe=(localStorage.getItem('gh_token')||'').trim()||(EMB&&EMB.trim?EMB.trim():'');if(!tkSafe){cloudBadge(false,'NO TOKEN - press RABT');return;}fetch('https://api.github.com/user',{headers:{'Authorization':'token '+tkSafe,'Accept':'application/vnd.github+json'}}).then(r=>{if(r.ok){return r.json();}throw 0;}).then(u=>cloudBadge(true,'ONLINE - '+u.login)).catch(()=>{cloudBadge(false,'TOKEN DEAD - reloading...');setTimeout(function(){location.replace(location.pathname+'?v='+LIVEVER+Date.now());},800);});}catch(e){}})();
 function save(sh,id,patch){
  try{
   const key='xstate_'+sh;let st={};try{st=JSON.parse(localStorage.getItem(key)||'{}')}catch(e){}
@@ -902,7 +902,7 @@ applyAll();
 if(ONLINE){setTimeout(()=>{try{const _h=()=>{for(const s in OVR)for(const id in OVR[s])for(const c in OVR[s][id])return true;for(const s in NOTES)for(const id in NOTES[s])return true;for(const s in PCOL)for(const id in PCOL[s])if(PCOL[s][id])return true;return false;};if(_h())pushCloud();else pullCloud();}catch(e){}},800);}
 (function(){const hn=document.querySelector('header');const sy=()=>{if(hn)document.documentElement.style.setProperty('--hdr',hn.offsetHeight+'px');};sy();window.addEventListener('resize',sy);})();
 new MutationObserver(()=>{document.querySelectorAll('input.ni').forEach(inp=>{const ta=document.createElement('textarea');ta.className=inp.className;ta.placeholder=inp.placeholder;ta.rows=1;ta.style.width=(inp.offsetWidth||160)+'px';ta.value=inp.value;inp.parentNode.replaceChild(ta,inp);});}).observe(document.body,{childList:true,subtree:true});
-if(ONLINE)setInterval(()=>{try{pullCloud();}catch(e){}},1500);
+if(ONLINE)setInterval(()=>{try{pullCloud();}catch(e){}},1100);
 try{document.addEventListener('visibilitychange',function(){if(!document.hidden){try{pullCloud();}catch(e){}}});window.addEventListener('focus',function(){try{pullCloud();}catch(e){}});}catch(e){}
 })();
 </script>
