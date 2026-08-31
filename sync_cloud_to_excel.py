@@ -139,7 +139,9 @@ def fetch_state(path=None):
             print(f'[cloud] state file read failed: {e}')
             return None
     try:
-        req = urllib.request.Request(STATE_URL, headers={'User-Agent': 'ps5-sync'})
+        req = urllib.request.Request(STATE_URL + '?t=' +
+                                     str(int(time.time() * 1000)),
+                                     headers={'User-Agent': 'ps5-sync'})
         with urllib.request.urlopen(req, timeout=30) as r:
             return json.loads(r.read().decode('utf-8'))
     except Exception as e:
@@ -165,9 +167,9 @@ MONTH_NAMES = {'JANUARY': '01', 'FEBRUARY': '02', 'MARCH': '03', 'APRIL': '04',
                'SEPTEMBER': '09', 'OCTOBER': '10', 'NOVEMBER': '11',
                'DECEMBER': '12'}
 DATE_RE = re.compile(r'PS-5\s*COMPLETIONS\s*DPR\s*SUMMERY\s*-\s*'
-                     r'(\d{1,2})-(\d{1,2})-(\d{2,4})\.xlsx$', re.I)
+                     r'(\d{1,2})-(\d{1,2})-(\d{2,4})')
 DATE_RE_MONTH = re.compile(r'PS-5\s*COMPLETIONS\s*DPR\s*SUMMERY\s*-\s*'
-                           r'(\d{1,2})-([A-Z]+)-(\d{2,4})\.xlsx$', re.I)
+                           r'(\d{1,2})-([A-Z]+)-(\d{2,4})')
 
 
 def _fname_date(f):
@@ -186,9 +188,34 @@ def _fname_date(f):
     return None
 
 
+PLATFORM_HTML = os.path.join(HERE, 'index.html')
+
+
+def base_rfc_sids():
+    """SIDs of the platform's own original RFC rows (parsed from its
+    index.html RFC array) - used to tell 'already in the data' rows apart
+    from rows that were APPENDED from the online 'adds'."""
+    try:
+        with open(PLATFORM_HTML, encoding='utf-8', errors='ignore') as f:
+            txt = f.read()
+    except Exception:
+        return set()
+    i = txt.find('RFC=[')
+    if i < 0:
+        return set()
+    e = txt.find('],ITRT=', i)
+    if e < 0:
+        return set()
+    try:
+        return {x.get('sid', '') for x in json.loads(txt[i + 4:e + 1])
+                if x.get('sid')}
+    except Exception:
+        return set()
+
+
 def find_target():
     """Newest DPR SUMMERY by the DATE SUFFIX in its name ('-DD-MM-YY' or
-    '-DD-MONTHNAME-YY'); an undated file falls back to its mtime."""
+    '-DD-MONTHNAME-YY'); an undated DPR file falls back to its mtime."""
     best = None
     seen = set()
     for folder in (HOME, DL_SUB):
@@ -197,7 +224,8 @@ def find_target():
         for f in os.listdir(folder):
             b = f.upper()
             if (f.startswith('~$') or not f.lower().endswith('.xlsx')
-                    or 'BACKUP' in b):
+                    or 'BACKUP' in b
+                    or 'COMPLETIONS DPR SUMMERY' not in b):
                 continue
             p = os.path.join(folder, f)
             key = os.path.realpath(p)
@@ -465,7 +493,7 @@ def run_once(force, state_file=None, target=None):
 
         # ---- online ADDED rows ('adds') & DELETE tombstones ('deladds') --
         if adds or deladds:
-            base_sids = set(_load_rfc_from_platform())
+            base_sids = base_rfc_sids()
 
             def find_row(sid):
                 for r in range(RFC_DATA_ROW, ws.max_row + 1):
