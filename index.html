@@ -304,7 +304,7 @@ function fillSel(id){const s=$(id);s.innerHTML='<option value="">ALL SUB SYSTEMS
  allOpts().forEach(x=>{const o=document.createElement('option');o.value=x.sid;o.textContent=x.name;s.appendChild(o);});}
 fillSel('s-pu');fillSel('s-it');
 (function(){const st=document.createElement('style');st.textContent='.addsub{background:linear-gradient(135deg,#22b14c,#1a8f3d 60%,#157231);border:none;color:#fff;border-radius:8px;padding:10px 16px;font-weight:700;font-size:13px;cursor:pointer;margin:8px 0 12px;box-shadow:0 4px 12px -4px rgba(26,143,61,.7)}.addsub:hover{filter:brightness(1.1);transform:translateY(-1px)}';document.head.appendChild(st);})();
-function allRFC(){return RFC.concat(Object.keys(ADDS).map(s=>ADDS[s]));}
+function allRFC(){const m={},o=[];RFC.concat(Object.keys(ADDS).map(s=>ADDS[s])).forEach(x=>{if(x&&!m[x.sid]){m[x.sid]=1;o.push(x);}});return o;}
 function refreshSubSelects(){try{fillSel('s-pu');fillSel('s-it');const sc=$('s-cab');if(sc){const cur=sc.value;const o0=document.createElement('option');o0.value='';o0.textContent='ALL SUB SYSTEMS';sc.innerHTML='';sc.appendChild(o0);const seen={};allOpts().forEach(x=>{if(seen[x.sid])return;seen[x.sid]=1;const o=document.createElement('option');o.value=x.sid;o.textContent=x.name;sc.appendChild(o);});sc.value=cur;}}catch(e){}}
 function addSub(){
  try{

@@ -63,27 +63,61 @@ ITR_MAP = {
 # RFC PROGRESS sheet: positional (1-based) columns, verified against the file
 RFC_ID_COL = 1          # 'PS5-01-01 - description'
 RFC_DATA_ROW = 4        # first data row
+# platform column -> fallback column (only used when header scan fails)
 RFC_MAP = {
     'Priority': 2,
     'RFC BHMPS': 3,
     'RFC EIT': 4,
     'Baseline': 5,
-    'Recovery': 6,
-    'SIGNED': 7,
-    'Milestone': 8,
-    'CPP-1': 50,
-    'EIT': 51,
-    'EACOP': 52,
-    'REMARK EACOP': 53,
-    'REMARK CPP-EIT': 54,
-    'REMARK CPP-1': 55,
+    'Recovery': 8,
+    'SIGNED': 9,
+    'Milestone': 10,
+    'EIT': 56,
+    'EACOP': 55,
+    'REMARK EACOP': 55,
+    'REMARK CPP-EIT': 56,
+    'REMARK CPP-1': 57,
     'STATUS': None,      # resolved dynamically -> 'WALKDOWN STATUS' column
 }
-# discipline letter -> (TOTAL col, CLOSED col)
-RFC_DISC_COLS = {'B': (10, 11), 'E': (14, 15), 'H': (18, 19), 'I': (22, 23),
-                 'M': (26, 27), 'P': (30, 31), 'S': (34, 35), 'T': (38, 39)}
+# header hints used to locate the REAL column in the current DPR workbook
+# (headers drift daily, so fixed indexes are unreliable)
+RFC_HINTS = {
+    'Priority': ('PRIORITY',),
+    'RFC BHMPS': ('BHMPS', 'RFSU'),
+    'RFC EIT': ('DESCIPILINE',),
+    'Baseline': ('CPP 1',),
+    'Recovery': ('RECOVERY',),
+    'SIGNED': ('RFC SIGNED',),
+    'Milestone': ('MILESTONE',),
+    'EIT': ('CPP-EIT',),
+    'EACOP': ('CPY', 'EACOP'),
+    'REMARK EACOP': ('BLOCKING POINTS REMARKS',),
+    'REMARK CPP-EIT': ('CPP-EIT',),
+    'REMARK CPP-1': ('CPP-1',),
+}
+# discipline letter -> (TOTAL col, CLOSED col) for THIS workbook layout
+RFC_DISC_COLS = {'B': (12, 13), 'E': (16, 17), 'H': (20, 21), 'I': (24, 25),
+                 'M': (28, 29), 'P': (32, 33), 'S': (36, 37), 'T': (40, 41)}
 # platform columns that are derived in Excel (formulas) - never written
 RFC_DERIVED = {'ITRs', 'CLOSED', 'BALANCE'}
+
+
+def rfc_columns(ws):
+    """Locate platform column -> Excel column by scanning header rows 1-3."""
+    out = {}
+    for r in range(1, 4):
+        for c in range(1, min(ws.max_column, 90) + 1):
+            t = re.sub(r'\s+', ' ', n(ws.cell(r, c).value)).upper()
+            if not t:
+                continue
+            for key, hints in RFC_HINTS.items():
+                if key in out:
+                    continue
+                for h in hints:
+                    if h in t:
+                        out[key] = c
+                        break
+    return out
 
 NOTE_HEADER = 'PLATFORM NOTES'
 TARGET_SHEET = {
@@ -126,21 +160,35 @@ def save_seen(h):
         json.dump({'hash': h, 'time': time.strftime('%Y-%m-%d %H:%M:%S')}, f)
 
 
+MONTH_NAMES = {'JANUARY': '01', 'FEBRUARY': '02', 'MARCH': '03', 'APRIL': '04',
+               'MAY': '05', 'JUNE': '06', 'JULY': '07', 'AUGUST': '08',
+               'SEPTEMBER': '09', 'OCTOBER': '10', 'NOVEMBER': '11',
+               'DECEMBER': '12'}
 DATE_RE = re.compile(r'PS-5\s*COMPLETIONS\s*DPR\s*SUMMERY\s*-\s*'
                      r'(\d{1,2})-(\d{1,2})-(\d{2,4})\.xlsx$', re.I)
+DATE_RE_MONTH = re.compile(r'PS-5\s*COMPLETIONS\s*DPR\s*SUMMERY\s*-\s*'
+                           r'(\d{1,2})-([A-Z]+)-(\d{2,4})\.xlsx$', re.I)
 
 
-def _date_key(m):
-    """(year, month, day) tuple sortable as strings."""
-    dd, mm, yy = m.group(1), m.group(2), m.group(3)
-    yy = yy if len(yy) == 4 else '20' + yy
-    return (yy, mm.zfill(2), dd.zfill(2))
+def _fname_date(f):
+    """(year, month, day) from '-DD-MM-YY' or '-DD-MONTHNAME-YY' suffix,
+    or None when the name carries no date."""
+    m = DATE_RE.search(f)
+    if m:
+        dd, mm, yy = m.group(1), m.group(2), m.group(3)
+        yy = yy if len(yy) == 4 else '20' + yy
+        return (yy, mm.zfill(2), dd.zfill(2))
+    m = DATE_RE_MONTH.search(f)
+    if m and m.group(2).upper() in MONTH_NAMES:
+        dd, mm, yy = m.group(1), MONTH_NAMES[m.group(2).upper()], m.group(3)
+        yy = yy if len(yy) == 4 else '20' + yy
+        return (yy, mm, dd.zfill(2))
+    return None
 
 
 def find_target():
-    """Newest DPR SUMMERY by the DATE SUFFIX in its name (DD-MM-YY),
-    e.g. 'PS-5 COMPLETIONS DPR SUMMERY -25-08-26.xlsx'.
-    Only the date changes daily - that suffix decides, not file mtime."""
+    """Newest DPR SUMMERY by the DATE SUFFIX in its name ('-DD-MM-YY' or
+    '-DD-MONTHNAME-YY'); an undated file falls back to its mtime."""
     best = None
     seen = set()
     for folder in (HOME, DL_SUB):
@@ -151,15 +199,14 @@ def find_target():
             if (f.startswith('~$') or not f.lower().endswith('.xlsx')
                     or 'BACKUP' in b):
                 continue
-            m = DATE_RE.search(f)
-            if not m:
-                continue
             p = os.path.join(folder, f)
             key = os.path.realpath(p)
             if key in seen:
                 continue
             seen.add(key)
-            cand = (_date_key(m), os.path.getmtime(p), p)
+            dk = _fname_date(f)
+            cand = (dk if dk else ('0000', '00', '00'),
+                    os.path.getmtime(p), p)
             if best is None or cand[:2] > best[:2]:
                 best = cand
     return best[2] if best else None
@@ -338,9 +385,18 @@ def run_once(force, state_file=None, target=None):
 
     # ---- RFC PROGRESS ----------------------------------------------------
     sh = 'RFC PROGRESS'
+    adds = st.get('adds', {}) or {}
+    deladds = st.get('deladds', {}) or {}
     if sh in wb.sheetnames and (cells.get(sh) or notes.get(sh)
-                                or colors.get(sh)):
+                                or colors.get(sh) or adds or deladds):
         ws = wb[sh]
+        rfc_cols = rfc_columns(ws)
+
+        def rfc_col(pcol):
+            if pcol in rfc_cols:
+                return rfc_cols[pcol]
+            return RFC_MAP.get(pcol)
+
         # platform sid = text before ' - ' in column A
         ids = {k.split(' - ')[0].strip(): v
                for k, v in index_ids(ws, RFC_ID_COL,
@@ -382,11 +438,14 @@ def run_once(force, state_file=None, target=None):
                     put(r, tc if mkey.group(2) == 'TOTAL' else cc, val)
                 elif pcol in RFC_DERIVED:
                     rep['skipped_derived'].append(f'{sh}:{pcol} ({rid})')
-                elif pcol in RFC_MAP:
-                    cidx = RFC_MAP[pcol]
-                    if cidx is None:
+                elif pcol in RFC_MAP or pcol in rfc_cols:
+                    cidx = rfc_col(pcol)
+                    if cidx is None and pcol == 'STATUS':
                         cidx = get_walk()
-                    put(r, cidx, val)
+                    if cidx:
+                        put(r, cidx, val)
+                    else:
+                        rep['no_col'].append(f'{sh}: {pcol} unmapped')
                 else:
                     rep['no_col'].append(f'{sh}: {pcol} unmapped')
         for rid, val in (notes.get(sh, {}) or {}).items():
@@ -403,6 +462,77 @@ def run_once(force, state_file=None, target=None):
             if r:
                 apply_fill(ws, r, 1, col)
                 rep['colors'] += 1
+
+        # ---- online ADDED rows ('adds') & DELETE tombstones ('deladds') --
+        if adds or deladds:
+            base_sids = set(_load_rfc_from_platform())
+
+            def find_row(sid):
+                for r in range(RFC_DATA_ROW, ws.max_row + 1):
+                    if n(ws.cell(r, RFC_ID_COL).value
+                         ).split(' - ')[0].strip().upper() == sid.upper():
+                        return r
+                return None
+
+            def last_data_row():
+                last = RFC_DATA_ROW
+                empty = 0
+                for rr in range(RFC_DATA_ROW, ws.max_row + 1):
+                    if n(ws.cell(rr, RFC_ID_COL).value):
+                        last = rr
+                        empty = 0
+                    else:
+                        empty += 1
+                        if empty > 20:
+                            break
+                return last or RFC_DATA_ROW
+
+            def put_rfc(row, pcol, val):
+                if val is None or val == '':
+                    return
+                cidx = rfc_col(pcol)
+                if not cidx:
+                    return
+                cell = ws.cell(row, cidx)
+                if is_formula(cell):
+                    rep['skipped_formula'].append(f'{sh}!{cell.coordinate}')
+                    return
+                cell.value = val
+                cell.font = Font(size=9)
+                rep['written'] += 1
+
+            for sid in deladds:
+                sid = n(sid)
+                if not sid or sid in base_sids:
+                    continue
+                r = find_row(sid)
+                if r:
+                    ws.delete_rows(r)
+                    rep['written'] += 1
+                    print(f'[sync] deladds: removed {sid} from {sh}')
+
+            for sid, a in (adds or {}).items():
+                sid = n(sid)
+                nm = (a.get('name') or '').strip()
+                if not sid or sid in deladds or sid in base_sids:
+                    continue
+                if find_row(sid):
+                    continue
+                row = last_data_row() + 1
+                ws.cell(row, RFC_ID_COL).value = (sid + ' - ' + nm).strip()
+                ws.cell(row, RFC_ID_COL).font = Font(size=9)
+                rep['written'] += 1
+                put_rfc(row, 'Priority', a.get('prio'))
+                put_rfc(row, 'RFC BHMPS', a.get('bhm'))
+                put_rfc(row, 'RFC EIT', a.get('eit'))
+                put_rfc(row, 'Baseline', a.get('base'))
+                put_rfc(row, 'Recovery', a.get('rec'))
+                put_rfc(row, 'SIGNED', a.get('signed'))
+                put_rfc(row, 'Milestone', a.get('mile'))
+                put_rfc(row, 'REMARK EACOP', a.get('re1'))
+                put_rfc(row, 'REMARK CPP-EIT', a.get('re2'))
+                put_rfc(row, 'REMARK CPP-1', a.get('re3'))
+                print(f'[sync] adds: appended {sid} to {sh}')
 
     # ---- nothing changed? do not touch the workbook at all ---------------
     if not (rep['written'] or rep['notes'] or rep['colors']):
