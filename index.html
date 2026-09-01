@@ -148,7 +148,7 @@ header,#wrap,.flow,footer{position:relative;z-index:1}
  <div id="clock"></div>
  <nav class="dlbar"><a class="all" title="DOWNLOAD ALL (full excel + every page) &#11015;" href="https://github.com/Mohamedgawad1/PS5-COMPLETION-PLATFORM/raw/main/PS5%20PLATFORM.xlsx" download>ALL</a><a title="&#11015; 1 &middot; DASHBOARD.xlsx" href="https://github.com/Mohamedgawad1/PS5-COMPLETION-PLATFORM/raw/main/EXCEL/1%20-%20DASHBOARD.xlsx" download>&#11015;1</a><a title="&#11015; 2 &middot; RFC PROGRESS.xlsx" href="https://github.com/Mohamedgawad1/PS5-COMPLETION-PLATFORM/raw/main/EXCEL/2%20-%20RFC%20PROGRESS.xlsx" download>&#11015;2</a><a title="&#11015; 3 &middot; BLOCKING-REMARKS.xlsx" href="https://github.com/Mohamedgawad1/PS5-COMPLETION-PLATFORM/raw/main/EXCEL/3%20-%20BLOCKING-REMARKS.xlsx" download>&#11015;3</a><a title="&#11015; 4 &middot; PUNCH LIST.xlsx" href="https://github.com/Mohamedgawad1/PS5-COMPLETION-PLATFORM/raw/main/EXCEL/4%20-%20PUNCH%20LIST.xlsx" download>&#11015;4</a><a title="&#11015; 5 &middot; ITR LIST.xlsx" href="https://github.com/Mohamedgawad1/PS5-COMPLETION-PLATFORM/raw/main/EXCEL/5%20-%20ITR%20LIST.xlsx" download>&#11015;5</a><a title="&#11015; 6 &middot; SUBSYSTEM.xlsx" href="https://github.com/Mohamedgawad1/PS5-COMPLETION-PLATFORM/raw/main/EXCEL/6%20-%20SUBSYSTEM.xlsx" download>&#11015;6</a><a title="&#11015; 7 &middot; COMPLETE (+ ROW).xlsm" href="https://github.com/Mohamedgawad1/PS5-COMPLETION-PLATFORM/raw/main/EXCEL/7%20-%20COMPLETE.xlsm" download>&#11015;7</a><a title="&#11015; 8 &middot; EIT CABLES.xlsx" href="https://github.com/Mohamedgawad1/PS5-COMPLETION-PLATFORM/raw/main/EXCEL/8%20-%20EIT%20CABLES.xlsx" download>&#11015;8</a><a title="&#11015; 9 &middot; ITR OPEN EIT.xlsx" href="https://github.com/Mohamedgawad1/PS5-COMPLETION-PLATFORM/raw/main/EXCEL/9%20-%20ITR%20OPEN%20EIT.xlsx" download>&#11015;9</a></nav>
  <div id="syncbadge">&#9679; SYNCED TO EXCEL</div><span id="syncdbg" style="font-size:8px;color:#7fd0ff;font-family:monospace;margin-left:8px;white-space:nowrap;max-width:360px;overflow:hidden;text-overflow:ellipsis"></span><span id="buildtag" style="font-size:9px;color:#9db8d2;font-family:monospace;margin-left:8px;white-space:nowrap">LIVE v5</span>
- <button id="xlsbtn" title="DOWNLOAD FULL EXCEL (all 8 pages + colours + links)">&#11015;</button><button id="prnbtn" title="PRINT">&#128424;</button><button id="svbtn" title="SAVE">&#128190;</button><button id="cloudbtn" title="RABT: اربط الحفظ الأون لاين ع المنصة">&#9729;</button><button id="rfbtn" title="REFRESH / UPDATE">&#8635;</button><button id="lgbtn" title="SIGN IN TO EDIT">&#128274;</button>
+ <button id="xlsbtn" title="DOWNLOAD FULL EXCEL (all 8 pages + colours + links)">&#11015;</button><button id="prnbtn" title="PRINT">&#128424;</button><button id="savebtn" title="SAVE & UPLOAD NOW - everyone sees your edits">&#128190; SAVE</button><button id="svbtn" title="RESAVE">&#128221;</button><button id="cloudbtn" title="RABT: اربط الحفظ الأون لاين ع المنصة">&#9729;</button><button id="rfbtn" title="REFRESH / UPDATE">&#8635;</button><button id="lgbtn" title="SIGN IN TO EDIT">&#128274;</button>
 </header>
 <div class="flow">
  <button class="step on" data-v="dash">1 &middot; DASHBOARD</button>
@@ -818,6 +818,7 @@ try{countUp()}catch(e){}
 #xlsbtn{background:linear-gradient(135deg,#ff9a4d,#ed7d31 50%,#d95b17);box-shadow:0 3px 10px -3px rgba(237,125,49,.8),inset 0 1px 0 rgba(255,255,255,.4)}
 #prnbtn{background:linear-gradient(135deg,#5b8dd6,#39679f 50%,#274a77);box-shadow:0 3px 10px -3px rgba(57,103,159,.8),inset 0 1px 0 rgba(255,255,255,.35)}
 #svbtn{background:linear-gradient(135deg,#2fbe6e,#1f9d55 50%,#136b3a);box-shadow:0 3px 10px -3px rgba(31,157,85,.8),inset 0 1px 0 rgba(255,255,255,.35)}
+#savebtn{height:30px;padding:0 12px;display:inline-flex;align-items:center;gap:4px;border:none;border-radius:999px;color:#fff;font-size:12px;font-weight:800;cursor:pointer;margin-left:8px;flex:0 0 auto;background:linear-gradient(135deg,#2fbe6e,#1f9d55 50%,#136b3a);box-shadow:0 3px 10px -3px rgba(31,157,85,.9),inset 0 1px 0 rgba(255,255,255,.35);transition:transform .15s ease,filter .15s ease}#savebtn:hover{transform:translateY(-1px);filter:brightness(1.12)}#savebtn:active{transform:scale(.95)}#savebtn:disabled{opacity:.6}
 #cloudbtn{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:none;border-radius:50%;color:#fff;font-size:14px;cursor:pointer;margin-left:8px;flex:0 0 auto;background:linear-gradient(135deg,#3a7bd5,#2b5aa8 50%,#1d4380);box-shadow:0 3px 10px -3px rgba(58,123,213,.8),inset 0 1px 0 rgba(255,255,255,.2)}
 #cloudbtn:hover{transform:translateY(-1px);filter:brightness(1.12)}
 #cloudbtn:active{transform:scale(.93)}
@@ -826,7 +827,7 @@ try{countUp()}catch(e){}
 #xlsbtn:hover{transform:translateY(-2px) scale(1.08)}
 #xlsbtn:active{transform:scale(.94)}
 #xlsbtn[disabled]{opacity:.55;cursor:wait}
-@media print{body::before,#xlsbtn,#prnbtn,#svbtn,#rfbtn,header,.flow,.dlbar,footer,.tools,.hint,#syncbadge,#clock{display:none!important}body{background:#fff!important}.view{display:none!important}.view.on{display:block!important}.panel{background:#fff!important;border:1px solid #b9c2cd!important;box-shadow:none!important;margin:8px 0!important;break-inside:auto}.kpis{padding-top:8px!important}.tblwrap{max-height:none!important;overflow:visible!important;border:none!important}th{position:static!important;background:#e8edf3!important;color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}td{color:#000!important;background:#fff!important}tbody tr:nth-child(even) td{background:#f4f6f9!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}h1,h2,h3,p,span,b,div,td,th,li,label{color:#000!important;text-shadow:none!important}}
+@media print{body::before,#xlsbtn,#prnbtn,#svbtn,#savebtn,#rfbtn,header,.flow,.dlbar,footer,.tools,.hint,#syncbadge,#clock{display:none!important}body{background:#fff!important}.view{display:none!important}.view.on{display:block!important}.panel{background:#fff!important;border:1px solid #b9c2cd!important;box-shadow:none!important;margin:8px 0!important;break-inside:auto}.kpis{padding-top:8px!important}.tblwrap{max-height:none!important;overflow:visible!important;border:none!important}th{position:static!important;background:#e8edf3!important;color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}td{color:#000!important;background:#fff!important}tbody tr:nth-child(even) td{background:#f4f6f9!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}h1,h2,h3,p,span,b,div,td,th,li,label{color:#000!important;text-shadow:none!important}}
 </style>
 
 
@@ -866,6 +867,20 @@ function resave(){var n=0,i,k,st;try{for(i=0;i<localStorage.length;i++){k=localS
 pushCloudSoon();
 var old=sb.title;sb.textContent='OK'+n;sb.style.fontSize='9px';sb.style.fontWeight='900';sb.disabled=true;setTimeout(function(){sb.innerHTML='&#128190;';sb.style.fontSize='';sb.style.fontWeight='';sb.disabled=false;sb.title=old;},2200);}
 if(sb)sb.addEventListener('click',resave);
+function saveNow(){var b=document.getElementById('savebtn');if(!b)return;if(b.dataset.run)return;b.dataset.run='1';b.disabled=true;b.textContent='SAVING...';try{cloudBadge(true,'SAVING & UPLOADING...');}catch(e){}var tk='';try{tk=tokc();}catch(e){}if(!tk){try{cloudBadge(false,'NO TOKEN - press RABT');}catch(e){}b.disabled=false;b.textContent='SAVE';delete b.dataset.run;return;}function done(msg,ok){try{cloudBadge(ok,msg);}catch(e){}b.disabled=false;b.textContent='SAVE';delete b.dataset.run;try{dbg('SAVE '+msg);}catch(e){}}
+ 
+ fetch(GHA,{cache:'no-store',headers:{'Authorization':'token '+tk,'Accept':'application/vnd.github+json'}}).then(function(r){return Promise.all([r.status,r.json().catch(function(){return{};})]);}).then(function(pair){
+  var api=pair[1];var cur={};try{cur=JSON.parse(decodeURIComponent(escape(atob((api.content||'').replace(/\n/g,'')))));}catch(e){}
+  try{mergeCloud(cur||{});window.__adsch&&(window.__adsch=0);}catch(e){}
+  return {cur:cur,sha:api.sha,tk:tk};
+ }).then(function(ctx){
+  return fetch(GHA,{method:'PUT',headers:{'Authorization':'token '+ctx.tk,'Content-Type':'application/json'},body:JSON.stringify({message:'manual save '+new Date().toISOString().slice(0,19),content:btoa(unescape(encodeURIComponent(JSON.stringify(buildNow())))),sha:ctx.sha})}).then(function(r){return Promise.all([r.status,r.json().catch(function(){return{};})]);});
+ }).then(function(pair2){
+  if(pair2[0]===200||pair2[0]===201){done('SAVED & ONLINE - everyone sees it now',true);try{pullCloud();}catch(e){}}else{done('SAVE FAIL '+pair2[0],false);}
+ }).catch(function(e){done('SAVE ERROR '+e,false);});
+}
+function buildNow(){var cells={},notes={},colors={};for(var s in OVR)for(var id in OVR[s])(cells[s]=cells[s]||{})[id]=OVR[s][id];for(var s in NOTES)for(var id in NOTES[s])(notes[s]=notes[s]||{})[id]=NOTES[s][id];for(var s in PCOL)for(var id in PCOL[s])if(PCOL[s][id])(colors[s]=colors[s]||{})[id]=PCOL[s][id];return {cells:cells,notes:notes,colors:colors,adds:ADDS,deladds:DELADD};}
+var svn=document.getElementById('savebtn');if(svn)svn.addEventListener('click',saveNow);
 })();
 </script>
 
