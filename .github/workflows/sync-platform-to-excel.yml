@@ -1,0 +1,36 @@
+name: Sync Platform Edits to Excel
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # Every 5 minutes
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install openpyxl requests
+
+      - name: Sync platform edits to Excel
+        env:
+          GITHUB_TOKEN: ${{ secrets.PLATFORM_TOKEN }}
+          REPO_OWNER: Mohamedgawad1
+          REPO_NAME: PS5-COMPLETION-PLATFORM
+        run: python .github/scripts/sync_to_excel.py
+
+      - name: Commit and push
+        run: |
+          git config user.name "Platform Sync"
+          git config user.email "sync@github.com"
+          git add "PS-5 COMPLETIONS DPR SUMMERY"*.xlsx
+          git diff --staged --quiet || git commit -m "Auto-sync: platform -> Excel"
+          git push

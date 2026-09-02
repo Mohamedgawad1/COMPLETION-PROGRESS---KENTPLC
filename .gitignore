@@ -1,4 +1,5 @@
 *.xlsx
+!PS-5 COMPLETIONS DPR SUMMERY*.xlsx
 __pycache__/
 *.pyc
 KENTPLC_Completion_Dashboard.html
