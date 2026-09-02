@@ -907,7 +907,7 @@ applyAll();
 if(ONLINE){setTimeout(()=>{try{const _h=()=>{for(const s in OVR)for(const id in OVR[s])for(const c in OVR[s][id])return true;for(const s in NOTES)for(const id in NOTES[s])return true;for(const s in PCOL)for(const id in PCOL[s])if(PCOL[s][id])return true;return false;};if(_h())pushCloud();else pullCloud();}catch(e){}},800);}
 (function(){const hn=document.querySelector('header');const sy=()=>{if(hn)document.documentElement.style.setProperty('--hdr',hn.offsetHeight+'px');};sy();window.addEventListener('resize',sy);})();
 new MutationObserver(()=>{document.querySelectorAll('input.ni').forEach(inp=>{const ta=document.createElement('textarea');ta.className=inp.className;ta.placeholder=inp.placeholder;ta.rows=1;ta.style.width=(inp.offsetWidth||160)+'px';ta.value=inp.value;inp.parentNode.replaceChild(ta,inp);});}).observe(document.body,{childList:true,subtree:true});
-if(ONLINE)setInterval(()=>{try{pullCloud();}catch(e){}},1100);
+if(ONLINE)setInterval(()=>{try{pullCloud();}catch(e){}},4000);
 try{document.addEventListener('visibilitychange',function(){if(!document.hidden){try{pullCloud();}catch(e){}}});window.addEventListener('focus',function(){try{pullCloud();}catch(e){}});}catch(e){}
 })();
 </script>
